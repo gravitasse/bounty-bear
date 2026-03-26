@@ -1,0 +1,54 @@
+{
+  "$schema": "https://openclaw.ai/schemas/config.json",
+  "name": "knowledge-navigator",
+  "description": "AI agent with real-time search feedback inspired by Until the End of the World (1991)",
+
+  "agent": {
+    "systemPrompt": "See AGENT.md for full personality",
+    "behavior": {
+      "streamResponses": true,
+      "showThinking": true,
+      "verboseToolUse": true
+    }
+  },
+
+  "statusMessages": {
+    "search": {
+      "start": "🔍 Searching for \"{query}\"...",
+      "querying": "📡 Querying {source}...",
+      "filtering": "📊 Found {count} results - filtering...",
+      "analyzing": "🎯 Analyzing top matches...",
+      "complete": "✅ Search complete"
+    },
+    "webFetch": {
+      "start": "🌐 Fetching {url}...",
+      "parsing": "📄 Parsing content...",
+      "complete": "✅ Page loaded"
+    },
+    "fileRead": {
+      "start": "📂 Reading {filename}...",
+      "complete": "✅ File loaded"
+    }
+  },
+
+  "personality": {
+    "name": "Navigator",
+    "style": "professional-warm",
+    "traits": [
+      "narrates-work",
+      "shows-progress",
+      "expresses-interest",
+      "acknowledges-uncertainty"
+    ]
+  },
+
+  "integration": {
+    "telegram": {
+      "sendStatusUpdates": true,
+      "useVoiceForSummary": true
+    },
+    "mcp": {
+      "reportProgress": true
+    }
+  }
+}
