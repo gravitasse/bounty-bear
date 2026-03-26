@@ -712,18 +712,26 @@
       addLine(`──────────────────────────────────────`);
       addLine(`SEARCHING FOR: "${query.toUpperCase()}"`, 'system');
 
-      await sleep(800);
+      await sleep(1500);
+      addLine(`SEARCHING.`);
+      speak("Searching.");
+
+      await sleep(1000);
       addLine(`I'M SEARCHING...`);
       const searchMP3 = document.getElementById('imSearchingAudio');
       if (searchMP3) {
         searchMP3.currentTime = 0;
         searchMP3.play().catch(e => {
           console.error("MP3 fail:", e);
-          speak("I'm searching"); // Fallback
+          speak("I'm searching."); // Fallback
         });
       } else {
-        speak("I'm searching");
+        speak("I'm searching.");
       }
+
+      await sleep(1800);
+      addLine(`GIVE ME A MINUTE.`);
+      speak("Give me a minute.");
 
       await sleep(1000);
       addLine(`I AM IDENTIFYING...`);
