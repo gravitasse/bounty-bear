@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BOUNTY BEAR - 1991 AI Agent Simulation</title>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --terminal-bg: #0d1117;
+      --green: #00ff41;
+      --green-dim: rgba(0, 255, 65, 0.3);
+      --amber: #ffb000;
+      --red: #ff3333;
+      --text: #e0e0e0;
+      --border: #333;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'VT323', monospace;
+      background: var(--bg);
+      color: var(--green);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* CRT Effect */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.15),
+        rgba(0, 0, 0, 0.15) 1px,
+        transparent 1px,
+        transparent 2px
+      );
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    /* Header */
+    header {
+      padding: 16px 24px;
+      border-bottom: 2px solid var(--green);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--terminal-bg);
+    }
+
+    .logo {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-bear {
+      font-size: 2rem;
+    }
+
+    .system-status {
+      font-size: 1.2rem;
+      color: var(--amber);
+    }
+
+    /* Main Layout */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 280px 1fr 320px;
+      height: calc(100vh - 60px);
+    }
+
+    @media (max-width: 1024px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+      .sidebar, .info-panel {
+        display: none;
+      }
+    }
+
+    /* Sidebar - Bear Avatar */
+    .sidebar {
+      border-right: 2px solid var(--green);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      background: var(--terminal-bg);
+    }
+
+    .bear-container {
+      width: 180px;
+      height: 180px;
+      border: 3px solid var(--green);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 100px;
+      background: rgba(0, 255, 65, 0.05);
+      position: relative;
+      transition: all 0.3s;
+    }
+
+    .bear-container.searching {
+      animation: pulse 0.8s ease-in-out infinite;
+      border-color: var(--amber);
+      box-shadow: 0 0 30px rgba(255, 176, 0, 0.3);
+    }
+
+    .bear-container.found {
+      border-color: var(--green);
+      box-shadow: 0 0 30px var(--green-dim);
+      animation: none;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .bear-status {
+      font-size: 1.4rem;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .bear-status.searching { color: var(--amber); }
+    .bear-status.ready { color: var(--green); }
+    .bear-status.found { color: var(--green); }
+
+    .stats-box {
+      width: 100%;
+      border: 1px solid var(--border);
+      padding: 16px;
+      font-size: 1.2rem;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px dashed var(--border);
+    }
+
+    .stat-row:last-child {
+      border-bottom: none;
+    }
+
+    .stat-value {
+      color: var(--amber);
+    }
+
+    /* Terminal Area */
+    .terminal {
+      display: flex;
+      flex-direction: column;
+      background: var(--terminal-bg);
+    }
+
+    .terminal-header {
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--border);
+      font-size: 1rem;
+      color: var(--text);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .terminal-output {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      font-size: 1.4rem;
+      line-height: 1.8;
+    }
+
+    .terminal-line {
+      margin-bottom: 8px;
+      opacity: 0;
+      animation: fadeIn 0.3s forwards;
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    .terminal-line.system {
+      color: var(--amber);
+    }
+
+    .terminal-line.success {
+      color: var(--green);
+      font-weight: bold;
+    }
+
+    .terminal-line.highlight {
+      background: var(--green-dim);
+      padding: 8px 12px;
+      margin: 12px 0;
+      border-left: 4px solid var(--green);
+    }
+
+    .terminal-line.result {
+      color: var(--text);
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      margin: 8px 0;
+      border-radius: 4px;
+    }
+
+    .terminal-line .money {
+      color: var(--amber);
+      font-size: 1.6rem;
+    }
+
+    .terminal-input-area {
+      padding: 16px 24px;
+      border-top: 2px solid var(--green);
+      display: flex;
+      gap: 12px;
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .prompt {
+      color: var(--green);
+      font-size: 1.4rem;
+    }
+
+    .terminal-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--green);
+      font-family: 'VT323', monospace;
+      font-size: 1.4rem;
+      outline: none;
+      caret-color: var(--green);
+    }
+
+    .terminal-input::placeholder {
+      color: rgba(0, 255, 65, 0.4);
+    }
+
+    /* Info Panel */
+    .info-panel {
+      border-left: 2px solid var(--green);
+      padding: 24px;
+      background: var(--terminal-bg);
+      overflow-y: auto;
+    }
+
+    .info-section {
+      margin-bottom: 32px;
+    }
+
+    .info-title {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.6rem;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      color: var(--amber);
+    }
+
+    .film-quote {
+      font-size: 1.2rem;
+      font-style: italic;
+      color: var(--text);
+      padding: 16px;
+      border-left: 2px solid var(--amber);
+      margin-bottom: 12px;
+    }
+
+    .film-credit {
+      font-size: 1rem;
+      color: var(--border);
+    }
+
+    .instructions {
+      font-size: 1.2rem;
+      color: var(--text);
+      line-height: 1.8;
+    }
+
+    .instructions li {
+      margin-bottom: 8px;
+      list-style: none;
+    }
+
+    .instructions li::before {
+      content: '>';
+      color: var(--green);
+      margin-right: 8px;
+    }
+
+    /* Blinking cursor */
+    .cursor {
+      display: inline-block;
+      width: 12px;
+      height: 1.2em;
+      background: var(--green);
+      margin-left: 4px;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    /* Progress bar */
+    .progress-bar {
+      width: 100%;
+      height: 20px;
+      background: var(--bg);
+      border: 1px solid var(--green);
+      margin: 12px 0;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--green);
+      width: 0%;
+      transition: width 0.3s;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <span class="logo-bear">🐻</span>
+      <span>BOUNTY BEAR v1.991</span>
+    </div>
+    <div class="system-status" id="systemStatus">SYSTEM READY</div>
+  </header>
+
+  <main>
+    <aside class="sidebar">
+      <div class="bear-container" id="bearContainer">
+        🐻
+      </div>
+      <div class="bear-status ready" id="bearStatus">READY</div>
+
+      <div class="stats-box">
+        <div class="stat-row">
+          <span>SEARCHES</span>
+          <span class="stat-value" id="searchCount">0</span>
+        </div>
+        <div class="stat-row">
+          <span>TARGETS FOUND</span>
+          <span class="stat-value" id="foundCount">0</span>
+        </div>
+        <div class="stat-row">
+          <span>BOUNTIES</span>
+          <span class="stat-value" id="bountyTotal">$0</span>
+        </div>
+      </div>
+    </aside>
+
+    <section class="terminal">
+      <div class="terminal-header">
+        <span>BOUNTY_BEAR_TERMINAL</span>
+        <span id="datetime"></span>
+      </div>
+      <div class="terminal-output" id="output">
+        <div class="terminal-line system">BOUNTY BEAR TRACKING SYSTEM v1.991</div>
+        <div class="terminal-line system">INSPIRED BY "UNTIL THE END OF THE WORLD" (1991)</div>
+        <div class="terminal-line">──────────────────────────────────────</div>
+        <div class="terminal-line">I'M THE BEAR. THE BOUNTY BEAR.</div>
+        <div class="terminal-line">I CAN FIND THEM ANYWHERE.</div>
+        <div class="terminal-line">──────────────────────────────────────</div>
+        <div class="terminal-line system">ENTER A NAME TO BEGIN SEARCH...</div>
+      </div>
+      <div class="terminal-input-area">
+        <span class="prompt">SEARCH></span>
+        <input type="text" class="terminal-input" id="searchInput" placeholder="Enter target name..." autocomplete="off">
+      </div>
+    </section>
+
+    <aside class="info-panel">
+      <div class="info-section">
+        <div class="info-title">THE PROPHECY</div>
+        <div class="film-quote">
+          "I'm the Bear. The Bounty Bear. I can find them anywhere!"
+        </div>
+        <div class="film-credit">— Until the End of the World, 1991</div>
+      </div>
+
+      <div class="info-section">
+        <div class="info-title">INSTRUCTIONS</div>
+        <ul class="instructions">
+          <li>Enter any name to search</li>
+          <li>Watch real-time feedback</li>
+          <li>Bear finds your target</li>
+          <li>Collect the bounty</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <div class="info-title">1991 vs 2026</div>
+        <div class="instructions">
+          <li>Film: Fiction</li>
+          <li>Now: Reality</li>
+          <li>AI agents exist</li>
+          <li>You're using one</li>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    const output = document.getElementById('output');
+    const searchInput = document.getElementById('searchInput');
+    const bearContainer = document.getElementById('bearContainer');
+    const bearStatus = document.getElementById('bearStatus');
+    const systemStatus = document.getElementById('systemStatus');
+    const searchCountEl = document.getElementById('searchCount');
+    const foundCountEl = document.getElementById('foundCount');
+    const bountyTotalEl = document.getElementById('bountyTotal');
+    const datetimeEl = document.getElementById('datetime');
+
+    let searchCount = 0;
+    let foundCount = 0;
+    let bountyTotal = 0;
+
+    // Update datetime
+    function updateDateTime() {
+      const now = new Date();
+      datetimeEl.textContent = now.toLocaleTimeString();
+    }
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
+
+    function addLine(text, className = '') {
+      const line = document.createElement('div');
+      line.className = `terminal-line ${className}`;
+      line.innerHTML = text;
+      output.appendChild(line);
+      output.scrollTop = output.scrollHeight;
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function setBearState(state) {
+      bearContainer.className = 'bear-container ' + state;
+      bearStatus.className = 'bear-status ' + state;
+
+      if (state === 'searching') {
+        bearStatus.textContent = 'SEARCHING...';
+        systemStatus.textContent = 'SEARCHING DATABASE';
+      } else if (state === 'found') {
+        bearStatus.textContent = 'TARGET FOUND';
+        systemStatus.textContent = 'POSITIVE ID';
+      } else {
+        bearStatus.textContent = 'READY';
+        systemStatus.textContent = 'SYSTEM READY';
+      }
+    }
+
+    async function performSearch(query) {
+      searchInput.disabled = true;
+      searchCount++;
+      searchCountEl.textContent = searchCount;
+
+      setBearState('searching');
+
+      addLine(`──────────────────────────────────────`);
+      addLine(`SEARCHING FOR: "${query.toUpperCase()}"`, 'system');
+
+      await sleep(800);
+      addLine(`I'M SEARCHING...`);
+
+      await sleep(1000);
+      addLine(`I AM IDENTIFYING...`);
+
+      await sleep(600);
+      addLine(`<div class="progress-bar"><div class="progress-fill" style="width: 30%"></div></div>`);
+
+      await sleep(800);
+      addLine(`CROSS-REFERENCING DATABASES...`);
+
+      await sleep(500);
+      // Update progress
+      const lastProgress = output.querySelector('.progress-fill');
+      if (lastProgress) lastProgress.style.width = '60%';
+
+      await sleep(700);
+      addLine(`MATCHING BIOMETRICS...`);
+
+      await sleep(600);
+      if (lastProgress) lastProgress.style.width = '90%';
+
+      await sleep(500);
+      if (lastProgress) lastProgress.style.width = '100%';
+
+      await sleep(400);
+      setBearState('found');
+
+      addLine(`I GOT HIM!`, 'success');
+
+      await sleep(300);
+      addLine(`THIS IS YOUR GUY!`, 'success');
+
+      // Generate fake result
+      const locations = ['BERLIN', 'TOKYO', 'PARIS', 'NEW YORK', 'SYDNEY', 'LONDON'];
+      const location = locations[Math.floor(Math.random() * locations.length)];
+
+      addLine(`<div class="result">
+        TARGET: ${query.toUpperCase()}<br>
+        LOCATION: ${location}<br>
+        STATUS: POSITIVE IDENTIFICATION<br>
+        CONFIDENCE: 99.7%
+      </div>`, 'highlight');
+
+      foundCount++;
+      foundCountEl.textContent = foundCount;
+
+      const bounty = 500000;
+      bountyTotal += bounty;
+      bountyTotalEl.textContent = '$' + bountyTotal.toLocaleString();
+
+      await sleep(500);
+      addLine(`FINDERS FEE: <span class="money">$500,000</span>`, 'success');
+
+      await sleep(800);
+      addLine(`──────────────────────────────────────`);
+      addLine(`THE BEAR ALWAYS GETS HIS MAN. 🐻`, 'system');
+
+      await sleep(500);
+      setBearState('ready');
+      searchInput.disabled = false;
+      searchInput.value = '';
+      searchInput.focus();
+    }
+
+    searchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && searchInput.value.trim()) {
+        performSearch(searchInput.value.trim());
+      }
+    });
+
+    searchInput.focus();
+  </script>
+</body>
+</html>
