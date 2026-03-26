@@ -29,14 +29,21 @@
       box-sizing: border-box;
     }
 
-    body {
+    html, body {
       font-family: 'VT323', monospace;
       background: var(--bg);
       color: var(--green);
-      min-height: 100vh;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      overscroll-behavior: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    body {
       display: flex;
       flex-direction: column;
-      overflow: hidden;
     }
 
     /* CRT Effect */
@@ -55,7 +62,8 @@
         transparent 2px
       );
       pointer-events: none;
-      z-index: 1000;
+      z-index: 9999;
+      touch-action: none;
     }
 
     /* Header */
@@ -90,15 +98,22 @@
       flex: 1;
       display: grid;
       grid-template-columns: 280px 1fr 320px;
-      height: calc(100vh - 60px);
+      grid-template-rows: 1fr;
+      min-height: 0; /* Important for flex child to shrink */
+      max-height: calc(100vh - 60px);
+      overflow: hidden;
     }
 
     @media (max-width: 1024px) {
       main {
         grid-template-columns: 1fr;
+        grid-template-rows: 1fr;
       }
       .sidebar, .info-panel {
         display: none;
+      }
+      .terminal {
+        height: 100%;
       }
     }
 
@@ -111,6 +126,8 @@
       align-items: center;
       gap: 24px;
       background: var(--terminal-bg);
+      overflow-y: auto;
+      min-height: 0;
     }
 
     .bear-container {
@@ -182,6 +199,8 @@
       display: flex;
       flex-direction: column;
       background: var(--terminal-bg);
+      min-height: 0; /* Allow flex child to shrink */
+      overflow: hidden;
     }
 
     .terminal-header {
@@ -195,10 +214,16 @@
 
     .terminal-output {
       flex: 1;
-      overflow-y: auto;
+      overflow-y: scroll;
+      overflow-x: hidden;
       padding: 24px;
       font-size: 1.4rem;
       line-height: 1.8;
+      min-height: 0; /* Critical for flex overflow */
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+      position: relative;
+      z-index: 1;
     }
 
     .terminal-line {
@@ -506,20 +531,17 @@
     }
     loadVoices();
 
-    // Speak function with bear personality
+    // Speak function - Web Speech API auto-queues, just don't cancel
     function speak(text) {
       if (!voiceEnabled || !synth) return;
 
-      // Cancel any ongoing speech
-      synth.cancel();
-
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.voice = bearVoice;
-      utterance.rate = 1.1;  // Slightly fast, confident
-      utterance.pitch = 0.9; // Slightly lower, authoritative
+      utterance.rate = 1.1;
+      utterance.pitch = 0.9;
       utterance.volume = 1.0;
 
-      synth.speak(utterance);
+      synth.speak(utterance); // API queues automatically, no cancel = no cutoff
     }
 
     // Voice button element
@@ -532,19 +554,11 @@
       audioInitialized = true;
       voiceBtn.classList.add('active');
 
-      // Test speak to unlock audio
-      const testUtterance = new SpeechSynthesisUtterance('');
-      testUtterance.volume = 0;
-      synth.speak(testUtterance);
-
-      // Now speak the intro
-      setTimeout(() => {
-        speak("I'm the bear. The bounty bear. I can find them anywhere!");
-        addLine(`VOICE: ENABLED - Audio initialized`, 'system');
-      }, 100);
+      // Speak the intro immediately
+      speak("I'm the bear. The bounty bear. I can find them anywhere!");
     }
 
-    // Voice button click handler
+    // Voice button click handler - toggle mute after first init
     voiceBtn.addEventListener('click', () => {
       if (!audioInitialized) {
         initAudio();
@@ -552,21 +566,22 @@
         voiceEnabled = !voiceEnabled;
         voiceBtn.classList.toggle('muted', !voiceEnabled);
         voiceBtn.classList.toggle('active', voiceEnabled);
-        addLine(`VOICE: ${voiceEnabled ? 'ENABLED' : 'MUTED'}`, 'system');
         if (voiceEnabled) speak('Voice enabled');
       }
     });
 
-    // Toggle voice with 'V' key
+    // Init audio on first real user click (not programmatic focus)
+    searchInput.addEventListener('click', initAudio, { once: true });
+
+    // Toggle voice with 'V' key (only when not typing in search)
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'v' || e.key === 'V') {
+      if ((e.key === 'v' || e.key === 'V') && document.activeElement !== searchInput) {
         if (!audioInitialized) {
           initAudio();
         } else {
           voiceEnabled = !voiceEnabled;
           voiceBtn.classList.toggle('muted', !voiceEnabled);
           voiceBtn.classList.toggle('active', voiceEnabled);
-          addLine(`VOICE: ${voiceEnabled ? 'ENABLED' : 'MUTED'}`, 'system');
           if (voiceEnabled) speak('Voice enabled');
         }
       }
@@ -609,6 +624,7 @@
     }
 
     async function performSearch(query) {
+      synth.cancel(); // Clear pending speech when starting new search
       searchInput.disabled = true;
       searchCount++;
       searchCountEl.textContent = searchCount;
@@ -694,8 +710,6 @@
         performSearch(searchInput.value.trim());
       }
     });
-
-    searchInput.focus();
   </script>
 </body>
 </html>
