@@ -268,7 +268,7 @@ The prophecy typed itself.
 - [x] Long-term memory (Session Persistence)
 - [ ] Piper TTS WASM for better voice
 - [ ] Actual person lookup APIs
-- [ ] OpenClaw skill package
+- [x] OpenClaw skill package
 - [x] Sound effects (Synthesized clicks)
 
 ---
