@@ -70,12 +70,14 @@ Works everywhere:
 ```text
 bounty-bear/
 ├── web-demo/
-│   ├── bounty-bear.html   # Main interactive demo (with voice)
+│   ├── bounty-bear.html   # Main interactive demo (standalone with voice)
 │   ├── prophecy.html      # Film tribute page
 │   └── index.html         # Knowledge Navigator demo
 ├── openclaw/
+│   ├── bounty-bear-client.html  # Live OpenClaw frontend (SSE stream)
 │   ├── AGENT.md           # Agent personality for OpenClaw
 │   └── config.json        # Status message templates
+├── install-skill.sh       # Interactive CLI installer for OpenClaw
 ├── manifest.json          # PWA manifest
 ├── sw.js                  # Service worker for offline
 ├── icons/                 # App icons
@@ -234,8 +236,11 @@ Type your target name, hit Enter, and the retro UI will dynamically narrate Open
 
 - **Retro Terminal UI**: Authentic CRT scanlines and phosphor green aesthetic.
 - **Cinematic Voice**: Deep robotic narration with film-accurate dialogue and pauses.
-- **Bounty Log**: Historically tracks all targets ever identified and caught.
-- **Session Persistence**: Your total bounty count and catch history save automatically.
+- **Cha-Ching Sound**: Synthesized success chime when a target is caught.
+- **Dynamic Confidence**: Each catch reports a slightly different confidence score (97–99.9%).
+- **Bounty Log**: Tracks all targets ever caught, with a **Clear** button to reset.
+- **Session Persistence**: Your total bounty count and catch history save automatically via `localStorage`.
+- **In-Browser Settings**: ⚙️ gear icon opens a config panel to set your API URL — no code editing needed.
 - **Universal Compatibility**: Zero-dependency PWA runs on anything from a 1991 laptop to a 2026 smartphone.
 - **OpenClaw Skill Native**: Architected to plug directly into OpenClaw as a live frontend.
 
@@ -246,7 +251,7 @@ Type your target name, hit Enter, and the retro UI will dynamically narrate Open
 Browsers require user interaction before playing audio (autoplay policy). Here's how we handle it:
 
 1. **First click on search box** → initializes audio, plays the original film MP3 snippet alongside the TTS intro.
-2. **Cinematic Pacing** → Utterances are perfectly timed with `sleep()` delays to match the 1991 film, including a massive 12.3-second silent progress bar climb and a 5-second dramatic pause before announcing the prize money!
+2. **Cinematic Pacing** → Utterances are perfectly timed with `sleep()` delays to match the 1991 film, including a massive 12.3-second silent progress bar climb and an 8-second dramatic pause before announcing the prize money!
 3. **Emergency Mute** → Pressing the 🔊 button or `V` key instantly triggers `stopAllAudio()` to forcefully halt both the Web Speech API and any background MP3 tracks immediately.
 
 ```javascript
@@ -287,7 +292,10 @@ The prophecy typed itself.
 - [ ] Piper TTS WASM for better voice
 - [ ] Actual person lookup APIs
 - [x] OpenClaw skill package
-- [x] Sound effects (Synthesized clicks)
+- [x] Sound effects (Cha-ching success chime)
+- [x] In-browser settings UI
+- [x] Dynamic confidence scoring
+- [x] Bounty log with clear button
 
 ---
 
