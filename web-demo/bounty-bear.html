@@ -598,24 +598,7 @@
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
 
-    function playClick() {
-      if (!audioCtx || !voiceEnabled) return;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.1);
-      
-      gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-      
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.1);
-    }
+
 
     function playChaChing() {
       if (!audioCtx || !voiceEnabled) return;
@@ -833,7 +816,6 @@
       line.innerHTML = text;
       output.appendChild(line);
       output.scrollTop = output.scrollHeight;
-      playClick();
     }
 
     function sleep(ms) {
