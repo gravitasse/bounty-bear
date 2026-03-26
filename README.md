@@ -116,7 +116,23 @@ The Bounty Bear UI is fully positioned to act as the actual frontend terminal fo
 
 We have provided a dedicated live-wired template at `openclaw/bounty-bear-client.html` that strips out the cinematic fake timers and replaces them with a live `EventSource` web stream ready to connect to your local OpenClaw server.
 
-### Step 1: Install the Agent Personality
+### Option 1: Interactive 1-Click Install (Recommended)
+
+The easiest way to set up the Bounty Bear skill. Run this from the project root:
+
+```bash
+chmod +x install-skill.sh
+./install-skill.sh
+```
+
+The script will ask you for your OpenClaw or n8n URL (e.g., `http://127.0.0.1:8080/v1/agent/stream`), automatically configure the client, and tell you when it's ready.
+
+---
+
+### Option 2: Manual Installation
+
+#### Step 1: Install the Agent Personality
+
 Your OpenClaw backend needs to know it is the Bounty Bear so it behaves correctly and emits the proper cinematic status updates.
 ```bash
 # Copy the provided personality definition to your OpenClaw agent directory
