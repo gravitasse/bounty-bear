@@ -116,24 +116,42 @@ The Bounty Bear UI is fully positioned to act as the actual frontend terminal fo
 
 We have provided a dedicated live-wired template at `openclaw/bounty-bear-client.html` that strips out the cinematic fake timers and replaces them with a live `EventSource` web stream ready to connect to your local OpenClaw server.
 
-### Option 1: Interactive 1-Click Install (Recommended)
+### Option 1: In-Browser Setup (Recommended — Zero Config)
 
-The easiest way to set up the Bounty Bear skill. Run this from the project root:
+The fastest way to get started. No terminal, no code editing.
+
+1. Open `openclaw/bounty-bear-client.html` in your browser (just double-click the file).
+2. Click the **⚙️ gear icon** in the top-right corner of the header.
+3. Paste your OpenClaw or n8n streaming URL (e.g., `http://127.0.0.1:8080/v1/agent/stream`).
+4. Click **🔌 TEST** to verify your server is reachable.
+5. Click **💾 SAVE**. Your URL is stored in `localStorage` and persists across refreshes.
+6. Type a name and start hunting!
+
+> If the connection fails during a search, the terminal will remind you to click ⚙️ to check your URL.
+
+---
+
+### Option 2: Interactive Bash Installer
+
+If you prefer the command line, run this from the project root:
 
 ```bash
 chmod +x install-skill.sh
 ./install-skill.sh
 ```
 
-The script will ask you for your OpenClaw or n8n URL (e.g., `http://127.0.0.1:8080/v1/agent/stream`), automatically configure the client, and tell you when it's ready.
+The script will prompt you for your API URL and automatically update the client file.
 
 ---
 
-### Option 2: Manual Installation
+### Option 3: Manual Installation
+
+If you prefer full manual control:
 
 #### Step 1: Install the Agent Personality
 
 Your OpenClaw backend needs to know it is the Bounty Bear so it behaves correctly and emits the proper cinematic status updates.
+
 ```bash
 # Copy the provided personality definition to your OpenClaw agent directory
 cp openclaw/AGENT.md ~/.openclaw/workspace/AGENT.md
@@ -142,35 +160,34 @@ cp openclaw/AGENT.md ~/.openclaw/workspace/AGENT.md
 openclaw gateway restart
 ```
 
-### Step 2: Configure the API Stream
+#### Step 2: Configure the API Stream
 
-Open `openclaw/bounty-bear-client.html` in your code editor and locate the API URL variable on line 724:
+Open `openclaw/bounty-bear-client.html` in your code editor and locate the API URL variable:
 
 ```javascript
-const OPENCLAW_API_URL = "http://localhost:3000/api/stream"; // Change this!
+const DEFAULT_API_URL = "http://localhost:3000/api/stream"; // API_URL_PLACEHOLDER
 ```
 
-**End-User Example:**
-If your OpenClaw gateway is running locally on port 8080, your URL would look like this:
-`const OPENCLAW_API_URL = "http://127.0.0.1:8080/v1/agent/stream";`
+Or, just use the built-in ⚙️ Settings panel in the browser — no code editing needed!
 
-*Note: The Bounty Bear expects a valid Server-Sent Events (SSE) stream that emits serialized JSON objects.*
+---
 
-### Step 3: Match the Event Payload
+### Event Payload Format
 
-Your backend (OpenClaw, n8n, or a custom Python/Node script) must send data in a specific "Streaming" format called **Server-Sent Events (SSE)**. 
+Your backend (OpenClaw, n8n, or a custom Python/Node script) must send data as **Server-Sent Events (SSE)**.
 
 Think of this like a "text message feed" from your server to the Bounty Bear. For the Bear to understand your messages, they need to be formatted as specific JSON "packets":
 
-1.  **Thinking/Searching Packets**: For every live update (like querying a site), send:
-    `{ "type": "status", "message": "Querying LinkedIn..." }`
-2.  **Success Packets**: When the target is caught, send:
-    `{ "type": "final_response", "content": "Full name, location, and bio here." }`
+1. **Thinking/Searching Packets**: For every live update (like querying a site), send:
+   `{ "type": "status", "message": "Querying LinkedIn..." }`
+2. **Success Packets**: When the target is caught, send:
+   `{ "type": "final_response", "content": "Full name, location, and bio here." }`
 
 #### How do I actually do this?
 
 - **If you are using Node.js / Express**:
   Your server route should look like this. Note the `text/event-stream` header which is required for the "live" feel:
+
   ```javascript
   app.get('/api/stream', (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');
@@ -190,13 +207,14 @@ Think of this like a "text message feed" from your server to the Bounty Bear. Fo
   In your "HTTP Response" node:
   1. Set **Response Mode** to `Last Node`.
   2. Set a custom Header: `Content-Type: text/event-stream`.
-  3. In the Body, use an expression to format your output exactly like the JSON packets above, prefixed with `data: ` and ending with two newlines (`\n\n`).
+  3. In the Body, use an expression to format your output exactly like the JSON packets above, prefixed with `data:` and ending with two newlines (`\n\n`).
 
-- **Troubleshooting**: 
-  If the Bear doesn't speak, check your browser's "Network" tab. Each message from your server **must** start with `data: ` and contain the exact JSON keys `"type"` and `"message"` or `"content"`.
+- **Troubleshooting**:
+  If the Bear doesn't speak, check your browser's "Network" tab. Each message from your server **must** start with `data:` and contain the exact JSON keys `"type"` and `"message"` or `"content"`.
 
-### Step 4: Launch the Interface
-You don't need NPM, React, or a build step. Simply double-click `openclaw/bounty-bear-client.html` to open it in your browser natively. 
+### Launch
+
+You don't need NPM, React, or a build step. Simply double-click `openclaw/bounty-bear-client.html` to open it in your browser natively.
 Type your target name, hit Enter, and the retro UI will dynamically narrate OpenClaw's live web scraping and thinking process exactly like the 1991 movie!
 ---
 
