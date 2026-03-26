@@ -615,8 +615,9 @@
       document.getElementById('clickHint').classList.add('hidden');
       searchInput.classList.remove('waiting');
 
-      // Speak the intro - exact quote from the film
-      speak("I'm the bear. The bounty bear. I find them here. I find them there. I can find them anywhere. The bear. Advanced bounty bank programming.");
+      // Play the original film audio on first click
+      const introAudio = new Audio('audio/im-searching.mp3');
+      introAudio.play();
     }
 
     // Voice button click handler - toggle mute after first init
