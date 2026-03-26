@@ -596,9 +596,9 @@
 
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.voice = bearVoice;
-      // Natural male voice with personality
-      utterance.rate = 1.05;  // Slightly energetic
-      utterance.pitch = 0.95; // Natural male range
+      // Natural male voice with deep cinematic register
+      utterance.rate = 1.0;   // Strong, measured
+      utterance.pitch = 0.8;  // Deeper male range
       utterance.volume = 1.0;
 
       synth.speak(utterance); // API queues automatically, no cancel = no cutoff
