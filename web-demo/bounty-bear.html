@@ -2,8 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#00ff41">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="AI search agent inspired by Until the End of the World (1991). The Bounty Bear finds anyone, anywhere.">
   <title>BOUNTY BEAR - 1991 AI Agent Simulation</title>
+  <link rel="manifest" href="../manifest.json">
+  <link rel="apple-touch-icon" href="../icons/bear-192.png">
   <link href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -415,6 +421,7 @@
           <li>Watch real-time feedback</li>
           <li>Bear finds your target</li>
           <li>Collect the bounty</li>
+          <li>Press V to toggle voice</li>
         </ul>
       </div>
 
@@ -444,6 +451,55 @@
     let searchCount = 0;
     let foundCount = 0;
     let bountyTotal = 0;
+    let voiceEnabled = true;
+
+    // ═══════════════════════════════════════════════════════════════
+    // WEB SPEECH API - Voice synthesis (works on all platforms)
+    // ═══════════════════════════════════════════════════════════════
+    const synth = window.speechSynthesis;
+    let bearVoice = null;
+
+    // Find a good voice for the bear
+    function loadVoices() {
+      const voices = synth.getVoices();
+      // Prefer: UK English male, then any English male, then any English
+      bearVoice = voices.find(v => v.lang.startsWith('en') && v.name.includes('Male')) ||
+                  voices.find(v => v.lang.startsWith('en-GB')) ||
+                  voices.find(v => v.lang.startsWith('en')) ||
+                  voices[0];
+      console.log('Bear voice:', bearVoice?.name);
+    }
+
+    // Load voices (async on some browsers)
+    if (synth.onvoiceschanged !== undefined) {
+      synth.onvoiceschanged = loadVoices;
+    }
+    loadVoices();
+
+    // Speak function with bear personality
+    function speak(text) {
+      if (!voiceEnabled || !synth) return;
+
+      // Cancel any ongoing speech
+      synth.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.voice = bearVoice;
+      utterance.rate = 1.1;  // Slightly fast, confident
+      utterance.pitch = 0.9; // Slightly lower, authoritative
+      utterance.volume = 1.0;
+
+      synth.speak(utterance);
+    }
+
+    // Toggle voice with 'V' key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'v' || e.key === 'V') {
+        voiceEnabled = !voiceEnabled;
+        addLine(`VOICE: ${voiceEnabled ? 'ENABLED' : 'DISABLED'}`, 'system');
+        if (voiceEnabled) speak('Voice enabled');
+      }
+    });
 
     // Update datetime
     function updateDateTime() {
@@ -493,9 +549,11 @@
 
       await sleep(800);
       addLine(`I'M SEARCHING...`);
+      speak("I'm searching");
 
       await sleep(1000);
       addLine(`I AM IDENTIFYING...`);
+      speak("I am identifying");
 
       await sleep(600);
       addLine(`<div class="progress-bar"><div class="progress-fill" style="width: 30%"></div></div>`);
@@ -521,9 +579,11 @@
       setBearState('found');
 
       addLine(`I GOT HIM!`, 'success');
+      speak("I got him!");
 
       await sleep(300);
       addLine(`THIS IS YOUR GUY!`, 'success');
+      speak("This is your guy!");
 
       // Generate fake result
       const locations = ['BERLIN', 'TOKYO', 'PARIS', 'NEW YORK', 'SYDNEY', 'LONDON'];
@@ -545,6 +605,7 @@
 
       await sleep(500);
       addLine(`FINDERS FEE: <span class="money">$500,000</span>`, 'success');
+      speak("Finders fee: Five hundred thousand dollars!");
 
       await sleep(800);
       addLine(`──────────────────────────────────────`);
