@@ -543,6 +543,9 @@
     </aside>
   </main>
 
+  <!-- Preload original audio clip -->
+  <audio id="imSearchingAudio" src="audio/im-searching.mp3" preload="auto"></audio>
+
   <script>
     const output = document.getElementById('output');
     const searchInput = document.getElementById('searchInput');
@@ -615,9 +618,22 @@
       document.getElementById('clickHint').classList.add('hidden');
       searchInput.classList.remove('waiting');
 
+      // Restore TTS intro
+      setTimeout(() => {
+        speak("I'm the bear. The bounty bear. I find them here. I find them there. I can find them anywhere. The bear - advanced bounty bank programming.");
+        addLine(`VOICE: ENABLED - Audio initialized`, 'system');
+      }, 100);
+
       // Play the original film audio on first click
-      const introAudio = new Audio('audio/im-searching.mp3');
-      introAudio.play();
+      const introAudio = document.getElementById('imSearchingAudio');
+      if (introAudio) {
+        // Reset time in case it's played again
+        introAudio.currentTime = 0;
+        introAudio.play().catch(e => {
+          console.error("Audio block from browser:", e);
+          addLine(`SYSTEM LOG: Original audio playback blocked by browser`, 'system');
+        });
+      }
     }
 
     // Voice button click handler - toggle mute after first init
@@ -698,7 +714,16 @@
 
       await sleep(800);
       addLine(`I'M SEARCHING...`);
-      speak("I'm searching");
+      const searchMP3 = document.getElementById('imSearchingAudio');
+      if (searchMP3) {
+        searchMP3.currentTime = 0;
+        searchMP3.play().catch(e => {
+          console.error("MP3 fail:", e);
+          speak("I'm searching"); // Fallback
+        });
+      } else {
+        speak("I'm searching");
+      }
 
       await sleep(1000);
       addLine(`I AM IDENTIFYING...`);
