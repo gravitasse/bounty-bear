@@ -720,6 +720,13 @@
 
     async function performSearch(query) {
       synth.cancel(); // Clear pending speech when starting new search
+      
+      const imAudio = document.getElementById('imSearchingAudio');
+      if (imAudio && voiceEnabled) {
+        imAudio.currentTime = 0;
+        imAudio.play().catch(e => console.error("Audio block from browser:", e));
+      }
+      
       searchInput.disabled = true;
       searchCount++;
       searchCountEl.textContent = searchCount;
