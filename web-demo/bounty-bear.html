@@ -563,11 +563,16 @@
     const synth = window.speechSynthesis;
     let bearVoice = null;
 
-    // Find a good voice for the bear - enthusiastic American style like the film
+    // Find a deep male voice for the bear - like the film
     function loadVoices() {
       const voices = synth.getVoices();
-      // Priority: American English male, energetic/clear
-      bearVoice = voices.find(v => v.lang === 'en-US' && v.name.includes('Male')) ||
+      // Look for deep male voices by name
+      bearVoice = voices.find(v => v.name.includes('Daniel')) ||  // Mac deep male
+                  voices.find(v => v.name.includes('Alex')) ||    // Mac male
+                  voices.find(v => v.name.includes('Fred')) ||    // Mac deeper
+                  voices.find(v => v.name.includes('David')) ||   // Windows male
+                  voices.find(v => v.name.includes('Mark')) ||    // Windows male
+                  voices.find(v => v.name.toLowerCase().includes('male')) ||
                   voices.find(v => v.lang === 'en-US') ||
                   voices.find(v => v.lang.startsWith('en')) ||
                   voices[0];
