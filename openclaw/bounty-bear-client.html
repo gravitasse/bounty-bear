@@ -453,6 +453,81 @@
       0%, 100% { box-shadow: 0 0 0 0 var(--green); }
       50% { box-shadow: 0 0 20px 5px var(--green-dim); }
     }
+
+    /* Settings Modal */
+    .settings-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--green);
+      font-size: 1.4rem;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .settings-btn:hover { background: rgba(0, 255, 65, 0.1); transform: scale(1.1); }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.visible { display: flex; }
+
+    .modal {
+      background: var(--terminal-bg);
+      border: 2px solid var(--green);
+      border-radius: 8px;
+      padding: 24px;
+      width: 90%;
+      max-width: 520px;
+      color: var(--green);
+      font-family: 'VT323', monospace;
+      box-shadow: 0 0 40px rgba(0, 255, 65, 0.2);
+    }
+    .modal h2 { font-size: 1.4rem; margin-bottom: 16px; text-align: center; }
+    .modal label { display: block; font-size: 1.1rem; margin-bottom: 6px; }
+    .modal input[type='text'] {
+      width: 100%;
+      padding: 10px;
+      font-family: 'VT323', monospace;
+      font-size: 1.1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--green);
+      border-radius: 4px;
+      margin-bottom: 12px;
+    }
+    .modal input[type='text']:focus { outline: none; border-color: var(--green); }
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+    .modal-actions button {
+      font-family: 'VT323', monospace;
+      font-size: 1.1rem;
+      padding: 8px 18px;
+      border: 1px solid var(--green);
+      background: none;
+      color: var(--green);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .modal-actions button:hover { background: rgba(0, 255, 65, 0.15); }
+    .modal-actions .btn-primary { background: rgba(0, 255, 65, 0.15); font-weight: bold; }
+    .modal-actions .btn-test { border-color: var(--amber); color: var(--amber); }
+    .modal-actions .btn-test:hover { background: rgba(255, 176, 0, 0.15); }
+    .test-result { font-size: 1rem; margin-top: 8px; min-height: 1.2em; }
+    .test-ok { color: var(--green); }
+    .test-fail { color: var(--red); }
+    .current-url { font-size: 0.9rem; color: var(--amber); margin-bottom: 12px; word-break: break-all; }
   </style>
 </head>
 <body>
@@ -461,8 +536,27 @@
       <span class="logo-bear">🐻</span>
       <span>BOUNTY BEAR v1.991</span>
     </div>
-    <div class="system-status" id="systemStatus">SYSTEM READY</div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="system-status" id="systemStatus">SYSTEM READY</div>
+      <button class="settings-btn" id="settingsBtn" title="Configure API endpoint">⚙️</button>
+    </div>
   </header>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal">
+      <h2>⚙️ BOUNTY BEAR CONFIGURATION</h2>
+      <div class="current-url">CURRENT: <span id="currentUrlDisplay">—</span></div>
+      <label for="apiUrlInput">OpenClaw / n8n Streaming URL:</label>
+      <input type="text" id="apiUrlInput" placeholder="http://127.0.0.1:8080/v1/agent/stream">
+      <div class="test-result" id="testResult"></div>
+      <div class="modal-actions">
+        <button class="btn-test" id="testBtn">🔌 TEST</button>
+        <button id="cancelSettingsBtn">CANCEL</button>
+        <button class="btn-primary" id="saveSettingsBtn">💾 SAVE</button>
+      </div>
+    </div>
+  </div>
 
   <main>
     <aside class="sidebar">
@@ -721,7 +815,66 @@
     // ═══════════════════════════════════════════════════════════════
     // OPENCLAW STREAMING INTEGRATION
     // ═══════════════════════════════════════════════════════════════
-    const OPENCLAW_API_URL = "http://localhost:3000/api/test-stream"; // API_URL_PLACEHOLDER
+    const DEFAULT_API_URL = "http://localhost:3000/api/stream"; // API_URL_PLACEHOLDER
+    let OPENCLAW_API_URL = localStorage.getItem('bountyBearApiUrl') || DEFAULT_API_URL;
+
+    // ═══════════════════════════════════════════════════════════════
+    // SETTINGS UI
+    // ═══════════════════════════════════════════════════════════════
+    const settingsModal = document.getElementById('settingsModal');
+    const apiUrlInput = document.getElementById('apiUrlInput');
+    const currentUrlDisplay = document.getElementById('currentUrlDisplay');
+    const testResult = document.getElementById('testResult');
+
+    currentUrlDisplay.textContent = OPENCLAW_API_URL;
+
+    document.getElementById('settingsBtn').addEventListener('click', () => {
+      apiUrlInput.value = OPENCLAW_API_URL;
+      currentUrlDisplay.textContent = OPENCLAW_API_URL;
+      testResult.textContent = '';
+      settingsModal.classList.add('visible');
+    });
+
+    document.getElementById('cancelSettingsBtn').addEventListener('click', () => {
+      settingsModal.classList.remove('visible');
+    });
+
+    document.getElementById('saveSettingsBtn').addEventListener('click', () => {
+      const newUrl = apiUrlInput.value.trim();
+      if (!newUrl) return;
+      OPENCLAW_API_URL = newUrl;
+      localStorage.setItem('bountyBearApiUrl', newUrl);
+      currentUrlDisplay.textContent = newUrl;
+      settingsModal.classList.remove('visible');
+      addLine(`SYSTEM: API endpoint updated to ${newUrl}`, 'system');
+    });
+
+    document.getElementById('testBtn').addEventListener('click', async () => {
+      const url = apiUrlInput.value.trim();
+      if (!url) { testResult.textContent = '❌ Enter a URL first.'; testResult.className = 'test-result test-fail'; return; }
+      testResult.textContent = '⏳ Testing connection...';
+      testResult.className = 'test-result';
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+        const res = await fetch(url, { method: 'HEAD', mode: 'no-cors', signal: controller.signal });
+        clearTimeout(timeout);
+        testResult.textContent = '✅ Server responded! Connection looks good.';
+        testResult.className = 'test-result test-ok';
+      } catch (err) {
+        if (err.name === 'AbortError') {
+          testResult.textContent = '❌ Timeout — server did not respond in 5s.';
+        } else {
+          testResult.textContent = '❌ Could not reach server. Check URL and ensure it is running.';
+        }
+        testResult.className = 'test-result test-fail';
+      }
+    });
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') settingsModal.classList.remove('visible');
+    });
 
     function performSearch(query) {
       synth.cancel(); // Clear pending speech when starting new search
@@ -832,8 +985,9 @@
 
       stream.onerror = (err) => {
         console.error("OpenClaw SSE connection failed:", err);
-        addLine(`CONNECTION LOST TO OPENCLAW RELAY. RETRYING...`, 'system');
-        speak("Connection lost.");
+        addLine(`CONNECTION FAILED TO: ${OPENCLAW_API_URL}`, 'system');
+        addLine(`TIP: Click the ⚙️ gear icon to configure your API endpoint.`, 'system');
+        speak("Connection lost. Check your settings.");
         setBearState('ready');
         searchInput.disabled = false;
         stream.close();
