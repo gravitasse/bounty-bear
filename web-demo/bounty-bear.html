@@ -351,6 +351,35 @@
       width: 0%;
       transition: width 0.3s;
     }
+
+    /* Voice button */
+    .voice-btn {
+      background: var(--green);
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .voice-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .voice-btn.muted {
+      background: var(--border);
+      opacity: 0.5;
+    }
+
+    .voice-btn.active {
+      animation: pulse-voice 1s infinite;
+    }
+
+    @keyframes pulse-voice {
+      0%, 100% { box-shadow: 0 0 0 0 var(--green); }
+      50% { box-shadow: 0 0 20px 5px var(--green-dim); }
+    }
   </style>
 </head>
 <body>
@@ -402,6 +431,7 @@
       <div class="terminal-input-area">
         <span class="prompt">SEARCH></span>
         <input type="text" class="terminal-input" id="searchInput" placeholder="Enter target name..." autocomplete="off">
+        <button id="voiceBtn" class="voice-btn" title="Click to enable voice">🔊</button>
       </div>
     </section>
 
@@ -492,12 +522,53 @@
       synth.speak(utterance);
     }
 
+    // Voice button element
+    const voiceBtn = document.getElementById('voiceBtn');
+    let audioInitialized = false;
+
+    // Initialize audio on first user interaction (required by browsers)
+    function initAudio() {
+      if (audioInitialized) return;
+      audioInitialized = true;
+      voiceBtn.classList.add('active');
+
+      // Test speak to unlock audio
+      const testUtterance = new SpeechSynthesisUtterance('');
+      testUtterance.volume = 0;
+      synth.speak(testUtterance);
+
+      // Now speak the intro
+      setTimeout(() => {
+        speak("I'm the bear. The bounty bear. I can find them anywhere!");
+        addLine(`VOICE: ENABLED - Audio initialized`, 'system');
+      }, 100);
+    }
+
+    // Voice button click handler
+    voiceBtn.addEventListener('click', () => {
+      if (!audioInitialized) {
+        initAudio();
+      } else {
+        voiceEnabled = !voiceEnabled;
+        voiceBtn.classList.toggle('muted', !voiceEnabled);
+        voiceBtn.classList.toggle('active', voiceEnabled);
+        addLine(`VOICE: ${voiceEnabled ? 'ENABLED' : 'MUTED'}`, 'system');
+        if (voiceEnabled) speak('Voice enabled');
+      }
+    });
+
     // Toggle voice with 'V' key
     document.addEventListener('keydown', (e) => {
       if (e.key === 'v' || e.key === 'V') {
-        voiceEnabled = !voiceEnabled;
-        addLine(`VOICE: ${voiceEnabled ? 'ENABLED' : 'DISABLED'}`, 'system');
-        if (voiceEnabled) speak('Voice enabled');
+        if (!audioInitialized) {
+          initAudio();
+        } else {
+          voiceEnabled = !voiceEnabled;
+          voiceBtn.classList.toggle('muted', !voiceEnabled);
+          voiceBtn.classList.toggle('active', voiceEnabled);
+          addLine(`VOICE: ${voiceEnabled ? 'ENABLED' : 'MUTED'}`, 'system');
+          if (voiceEnabled) speak('Voice enabled');
+        }
       }
     });
 
