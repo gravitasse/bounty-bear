@@ -37,8 +37,10 @@ Works everywhere:
 ### Voice Output
 
 - **Web Speech API** - works in all modern browsers
-- Press `V` to toggle voice on/off
+- Click the search box or voice button to initialize audio
+- Press `V` to toggle voice on/off (when not typing)
 - Bear speaks the key lines from the film
+- Speech queues naturally - no cutoffs or overlapping
 
 ### Retro Terminal Aesthetic
 
@@ -128,6 +130,34 @@ Now your OpenClaw agent will narrate searches in real-time like the Bounty Bear.
 | Offline | Service Worker | PWA support |
 | Styling | CSS Variables | Easy theming |
 | Fonts | Google Fonts | VT323, Press Start 2P |
+
+---
+
+## How the Voice Works
+
+Browsers require user interaction before playing audio (autoplay policy). Here's how we handle it:
+
+1. **First click on search box** → initializes audio, speaks intro
+2. **Web Speech API queuing** → utterances queue naturally, no `synth.cancel()` during speech
+3. **New search clears queue** → `synth.cancel()` only at start of new search
+4. **V key toggle** → only works when not typing in search box
+
+```javascript
+// Don't cancel during speech - let it queue
+function speak(text) {
+  if (!voiceEnabled || !synth) return;
+  const utterance = new SpeechSynthesisUtterance(text);
+  synth.speak(utterance); // API queues automatically
+}
+
+// Only cancel when starting fresh
+async function performSearch(query) {
+  synth.cancel(); // Clear queue for new search
+  // ... speak search dialogue
+}
+```
+
+This gives smooth, natural dialogue without cutoffs.
 
 ---
 
