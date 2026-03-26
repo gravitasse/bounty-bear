@@ -160,7 +160,7 @@ Type your target name, hit Enter, and the retro UI will dynamically narrate Open
 | :-------- | :--------------- | :------------------------------- |
 | UI | Pure HTML/CSS/JS | Zero dependencies, runs anywhere |
 | Voice | Web Speech API | Built into all browsers |
-| Audio | Web Audio API | Low-latency synthesis for clicks |
+| Audio | Web Audio API | Success sound synthesis (cha-ching) |
 | Persistence | LocalStorage | Remembers your bounties & history |
 | Offline | Service Worker | PWA support |
 | Styling | CSS Variables | Easy theming |
@@ -170,7 +170,6 @@ Type your target name, hit Enter, and the retro UI will dynamically narrate Open
 
 - **Retro Terminal UI**: Authentic CRT scanlines and phosphor green aesthetic.
 - **Cinematic Voice**: Deep robotic narration with film-accurate dialogue and pauses.
-- **Synthesized Immersion**: Mechanical keyboard clicks and data-crunching sounds generated in real-time.
 - **Bounty Log**: Historically tracks all targets ever identified and caught.
 - **Session Persistence**: Your total bounty count and catch history save automatically.
 - **Universal Compatibility**: Zero-dependency PWA runs on anything from a 1991 laptop to a 2026 smartphone.
