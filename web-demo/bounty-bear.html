@@ -471,6 +471,19 @@
     .log-entry:last-child { border-bottom: none; }
     .log-name { color: var(--green); }
     .log-bounty { color: var(--amber); }
+    .log-header { display: flex; justify-content: space-between; align-items: center; }
+    .clear-log-btn {
+      background: none;
+      border: 1px solid var(--red);
+      color: var(--red);
+      font-family: 'VT323', monospace;
+      font-size: 0.85rem;
+      padding: 2px 8px;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: all 0.2s;
+    }
+    .clear-log-btn:hover { background: rgba(255, 51, 51, 0.15); }
   </style>
 </head>
 <body>
@@ -559,7 +572,10 @@
         </div>
       </div>
       <div class="info-section">
-        <div class="info-title">BOUNTY LOG</div>
+        <div class="log-header">
+          <div class="info-title">BOUNTY LOG</div>
+          <button class="clear-log-btn" id="clearLogBtn" title="Clear bounty log">CLEAR</button>
+        </div>
         <div class="bounty-log" id="bountyLog">
           <!-- Log entries will be added here -->
           <div class="log-entry" style="opacity: 0.5; justify-content: center;">NO RECORDS FOUND</div>
@@ -807,6 +823,14 @@
         </div>
       `).join('');
     }
+
+    function clearBountyLog() {
+      bountyHistory = [];
+      renderBountyLog();
+      saveSession();
+    }
+
+    document.getElementById('clearLogBtn').addEventListener('click', clearBountyLog);
 
     loadSession();
 
