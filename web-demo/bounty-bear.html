@@ -714,23 +714,13 @@
 
       await sleep(1500);
       await sleep(1500);
+      await sleep(1500);
       addLine(`I'M SEARCHING.`);
-      const searchMP3 = document.getElementById('imSearchingAudio');
-      if (searchMP3) {
-        searchMP3.currentTime = 0;
-        searchMP3.play().catch(e => speak("I'm searching."));
-      } else {
-        speak("I'm searching.");
-      }
+      speak("I'm searching.");
 
-      await sleep(2000); // Wait long enough for the first audio to finish!
+      await sleep(2000);
       addLine(`I'M SEARCHING.`);
-      if (searchMP3) {
-        searchMP3.currentTime = 0;
-        searchMP3.play().catch(e => speak("I'm searching."));
-      } else {
-        speak("I'm searching.");
-      }
+      speak("I'm searching.");
 
       await sleep(1800);
       addLine(`GIVE ME A MINUTE.`);
