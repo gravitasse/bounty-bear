@@ -110,17 +110,20 @@ A tribute showing 1991 vs 2026 - what the film predicted vs what we have now.
 
 ---
 
-## OpenClaw Integration
+## OpenClaw Integration Architecture
 
-Copy the agent personality to OpenClaw:
+The Bounty Bear UI is fully positioned to act as the actual frontend terminal for an OpenClaw agent skill.
 
-```bash
-cp openclaw/AGENT.md ~/.openclaw/workspace/AGENT.md
-openclaw gateway restart
-```
+Currently, `bounty-bear.html` runs a simulated search (`performSearch`) to demonstrate the cinematic timing, audio, and CRT aesthetic. To turn this into a live, functional skill:
 
-Now your OpenClaw agent will narrate searches in real-time like the Bounty Bear.
+1. **The Backend (Brain)**:
+   Copy the provided `openclaw/AGENT.md` personality into your OpenClaw gateway (`cp openclaw/AGENT.md ~/.openclaw/workspace/AGENT.md`). This guarantees the OpenClaw backend natively emits search status updates (`🔍 Searching...`, `📡 Querying...`) while it leverages its real tools to browse the web.
+2. **The Frontend (Face & Voice)**:
+   Rewrite `performSearch()` in `bounty-bear.html` to open a **WebSocket** or **Server-Sent Events (SSE)** connection to your OpenClaw API endpoint.
+3. **The Synchronization**:
+   Instead of hardcoded `sleep()` timers, the frontend will listen for live status events streaming from OpenClaw. When a new status event arrives, the frontend prints it to the green CRT terminal and uses `speak()` to narrate exactly what the backend is doing in real-time, utilizing our perfectly tuned deep robotic voice.
 
+This architecture transforms the project from a stunning 1991 movie replica into a completely functional, real-world AI agent interface.
 ---
 
 ## Tech Stack
