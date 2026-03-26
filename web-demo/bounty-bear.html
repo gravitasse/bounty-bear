@@ -636,6 +636,15 @@
       }
     }
 
+    function stopAllAudio() {
+      if (synth) synth.cancel();
+      const imAudio = document.getElementById('imSearchingAudio');
+      if (imAudio) {
+        imAudio.pause();
+        imAudio.currentTime = 0;
+      }
+    }
+
     // Voice button click handler - toggle mute after first init
     voiceBtn.addEventListener('click', () => {
       if (!audioInitialized) {
@@ -644,7 +653,11 @@
         voiceEnabled = !voiceEnabled;
         voiceBtn.classList.toggle('muted', !voiceEnabled);
         voiceBtn.classList.toggle('active', voiceEnabled);
-        if (voiceEnabled) speak('Voice enabled');
+        if (!voiceEnabled) {
+          stopAllAudio();
+        } else {
+          speak('Voice enabled');
+        }
       }
     });
 
@@ -660,7 +673,11 @@
           voiceEnabled = !voiceEnabled;
           voiceBtn.classList.toggle('muted', !voiceEnabled);
           voiceBtn.classList.toggle('active', voiceEnabled);
-          if (voiceEnabled) speak('Voice enabled');
+          if (!voiceEnabled) {
+            stopAllAudio();
+          } else {
+            speak('Voice enabled');
+          }
         }
       }
     });
