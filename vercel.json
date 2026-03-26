@@ -2,7 +2,8 @@
   "version": 2,
   "name": "bounty-bear",
   "rewrites": [
-    { "source": "/", "destination": "/web-demo/bounty-bear.html" }
+    { "source": "/", "destination": "/web-demo/bounty-bear.html" },
+    { "source": "/audio/(.*)", "destination": "/web-demo/audio/$1" }
   ],
   "headers": [
     {
