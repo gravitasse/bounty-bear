@@ -725,8 +725,14 @@
       addLine(`THIS IS YOUR GUY!`, 'success');
       speak("This is your guy!");
 
-      // Generate fake result
-      const locations = ['BERLIN', 'TOKYO', 'PARIS', 'NEW YORK', 'SYDNEY', 'LONDON'];
+      // Random location from around the world
+      const locations = [
+        'BERLIN', 'TOKYO', 'PARIS', 'NEW YORK', 'SYDNEY', 'LONDON',
+        'HONG KONG', 'MOSCOW', 'DUBAI', 'SAO PAULO', 'SINGAPORE', 'MUMBAI',
+        'JOHANNESBURG', 'CAIRO', 'MEXICO CITY', 'BUENOS AIRES', 'SEOUL', 'BANGKOK',
+        'AMSTERDAM', 'TORONTO', 'LOS ANGELES', 'VIENNA', 'PRAGUE', 'ISTANBUL',
+        'NAIROBI', 'MANILA', 'JAKARTA', 'ROME', 'BARCELONA', 'MIAMI'
+      ];
       const location = locations[Math.floor(Math.random() * locations.length)];
 
       addLine(`<div class="result">
