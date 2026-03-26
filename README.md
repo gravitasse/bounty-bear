@@ -125,8 +125,8 @@ Now your OpenClaw agent will narrate searches in real-time like the Bounty Bear.
 
 ## Tech Stack
 
-| Component | Technology | Why |
-|-----------|-----------|-----|
+| Component | Technology       | Why                              |
+| :-------- | :--------------- | :------------------------------- |
 | UI | Pure HTML/CSS/JS | Zero dependencies, runs anywhere |
 | Voice | Web Speech API | Built into all browsers |
 | Offline | Service Worker | PWA support |
@@ -139,27 +139,22 @@ Now your OpenClaw agent will narrate searches in real-time like the Bounty Bear.
 
 Browsers require user interaction before playing audio (autoplay policy). Here's how we handle it:
 
-1. **First click on search box** → initializes audio, speaks intro
-2. **Web Speech API queuing** → utterances queue naturally, no `synth.cancel()` during speech
-3. **New search clears queue** → `synth.cancel()` only at start of new search
-4. **V key toggle** → only works when not typing in search box
+1. **First click on search box** → initializes audio, plays the original film MP3 snippet alongside the TTS intro.
+2. **Cinematic Pacing** → Utterances are perfectly timed with `sleep()` delays to match the 1991 film, including a massive 12.3-second silent progress bar climb and a 5-second dramatic pause before announcing the prize money!
+3. **Emergency Mute** → Pressing the 🔊 button or `V` key instantly triggers `stopAllAudio()` to forcefully halt both the Web Speech API and any background MP3 tracks immediately.
 
 ```javascript
-// Don't cancel during speech - let it queue
-function speak(text) {
-  if (!voiceEnabled || !synth) return;
-  const utterance = new SpeechSynthesisUtterance(text);
-  synth.speak(utterance); // API queues automatically
-}
-
-// Only cancel when starting fresh
-async function performSearch(query) {
-  synth.cancel(); // Clear queue for new search
-  // ... speak search dialogue
+function stopAllAudio() {
+  if (synth) synth.cancel(); // cuts TTS mid-sentence
+  const imAudio = document.getElementById('imSearchingAudio');
+  if (imAudio) {
+    imAudio.pause(); // forcefully stop the MP3
+    imAudio.currentTime = 0;
+  }
 }
 ```
 
-This gives smooth, natural dialogue without cutoffs.
+This ensures full control over the audio while delivering a perfectly paced, suspenseful user experience.
 
 ---
 
