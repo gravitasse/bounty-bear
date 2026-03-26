@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#00ff41">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="AI search agent inspired by Until the End of the World (1991). The Bounty Bear finds anyone, anywhere.">
+  <title>BOUNTY BEAR - 1991 AI Agent Simulation</title>
+  <link rel="manifest" href="../manifest.json">
+  <link rel="apple-touch-icon" href="../icons/bear-192.png">
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --terminal-bg: #0d1117;
+      --green: #00ff41;
+      --green-dim: rgba(0, 255, 65, 0.3);
+      --amber: #ffb000;
+      --red: #ff3333;
+      --text: #e0e0e0;
+      --border: #333;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      font-family: 'VT323', monospace;
+      background: var(--bg);
+      color: var(--green);
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      overscroll-behavior: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* CRT Effect */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.15),
+        rgba(0, 0, 0, 0.15) 1px,
+        transparent 1px,
+        transparent 2px
+      );
+      pointer-events: none;
+      z-index: 9999;
+      touch-action: none;
+    }
+
+    /* Header */
+    header {
+      padding: 16px 24px;
+      border-bottom: 2px solid var(--green);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--terminal-bg);
+    }
+
+    .logo {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-bear {
+      font-size: 2rem;
+    }
+
+    .system-status {
+      font-size: 1.2rem;
+      color: var(--amber);
+    }
+
+    /* Main Layout */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 280px 1fr 320px;
+      grid-template-rows: 1fr;
+      min-height: 0; /* Important for flex child to shrink */
+      max-height: calc(100vh - 60px);
+      overflow: hidden;
+    }
+
+    @media (max-width: 1024px) {
+      main {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr;
+      }
+      .sidebar, .info-panel {
+        display: none;
+      }
+      .terminal {
+        height: 100%;
+      }
+    }
+
+    /* Sidebar - Bear Avatar */
+    .sidebar {
+      border-right: 2px solid var(--green);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      background: var(--terminal-bg);
+      overflow-y: auto;
+      min-height: 0;
+    }
+
+    .bear-container {
+      width: 180px;
+      height: 180px;
+      border: 3px solid var(--green);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 100px;
+      background: rgba(0, 255, 65, 0.05);
+      position: relative;
+      transition: all 0.3s;
+    }
+
+    .bear-container.searching {
+      animation: pulse 0.8s ease-in-out infinite;
+      border-color: var(--amber);
+      box-shadow: 0 0 30px rgba(255, 176, 0, 0.3);
+    }
+
+    .bear-container.found {
+      border-color: var(--green);
+      box-shadow: 0 0 30px var(--green-dim);
+      animation: none;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .bear-status {
+      font-size: 1.4rem;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .bear-status.searching { color: var(--amber); }
+    .bear-status.ready { color: var(--green); }
+    .bear-status.found { color: var(--green); }
+
+    .stats-box {
+      width: 100%;
+      border: 1px solid var(--border);
+      padding: 16px;
+      font-size: 1.2rem;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px dashed var(--border);
+    }
+
+    .stat-row:last-child {
+      border-bottom: none;
+    }
+
+    .stat-value {
+      color: var(--amber);
+    }
+
+    /* Terminal Area */
+    .terminal {
+      display: flex;
+      flex-direction: column;
+      background: var(--terminal-bg);
+      min-height: 0; /* Allow flex child to shrink */
+      overflow: hidden;
+    }
+
+    .terminal-header {
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--border);
+      font-size: 1rem;
+      color: var(--text);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .terminal-output {
+      flex: 1;
+      overflow-y: scroll;
+      overflow-x: hidden;
+      padding: 24px;
+      font-size: 1.4rem;
+      line-height: 1.8;
+      min-height: 0; /* Critical for flex overflow */
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+      position: relative;
+      z-index: 1;
+    }
+
+    .terminal-line {
+      margin-bottom: 8px;
+      opacity: 0;
+      animation: fadeIn 0.3s forwards;
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    .terminal-line.system {
+      color: var(--amber);
+    }
+
+    .terminal-line.success {
+      color: var(--green);
+      font-weight: bold;
+    }
+
+    .terminal-line.highlight {
+      background: var(--green-dim);
+      padding: 8px 12px;
+      margin: 12px 0;
+      border-left: 4px solid var(--green);
+    }
+
+    .terminal-line.result {
+      color: var(--text);
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      margin: 8px 0;
+      border-radius: 4px;
+    }
+
+    .terminal-line .money {
+      color: var(--amber);
+      font-size: 1.6rem;
+    }
+
+    .terminal-input-area {
+      padding: 16px 24px;
+      border-top: 2px solid var(--green);
+      display: flex;
+      gap: 12px;
+      background: rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    /* Click to start hint */
+    .click-hint {
+      position: absolute;
+      top: -40px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--amber);
+      color: var(--bg);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      animation: bounce-hint 1s ease-in-out infinite;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .click-hint::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 8px solid var(--amber);
+    }
+
+    .click-hint.hidden {
+      display: none;
+    }
+
+    @keyframes bounce-hint {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-5px); }
+    }
+
+    /* Pulsing glow on input before click */
+    .terminal-input.waiting {
+      animation: pulse-input 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-input {
+      0%, 100% { box-shadow: 0 0 0 0 var(--green-dim); }
+      50% { box-shadow: 0 0 20px 5px var(--green-dim); }
+    }
+
+    .prompt {
+      color: var(--green);
+      font-size: 1.4rem;
+    }
+
+    .terminal-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--green);
+      font-family: 'VT323', monospace;
+      font-size: 1.4rem;
+      outline: none;
+      caret-color: var(--green);
+    }
+
+    .terminal-input::placeholder {
+      color: rgba(0, 255, 65, 0.4);
+    }
+
+    /* Info Panel */
+    .info-panel {
+      border-left: 2px solid var(--green);
+      padding: 24px;
+      background: var(--terminal-bg);
+      overflow-y: auto;
+    }
+
+    .info-section {
+      margin-bottom: 32px;
+    }
+
+    .info-title {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.6rem;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      color: var(--amber);
+    }
+
+    .film-quote {
+      font-size: 1.2rem;
+      font-style: italic;
+      color: var(--text);
+      padding: 16px;
+      border-left: 2px solid var(--amber);
+      margin-bottom: 12px;
+    }
+
+    .film-credit {
+      font-size: 1rem;
+      color: var(--border);
+    }
+
+    .instructions {
+      font-size: 1.2rem;
+      color: var(--text);
+      line-height: 1.8;
+    }
+
+    .instructions li {
+      margin-bottom: 8px;
+      list-style: none;
+    }
+
+    .instructions li::before {
+      content: '>';
+      color: var(--green);
+      margin-right: 8px;
+    }
+
+    /* Blinking cursor */
+    .cursor {
+      display: inline-block;
+      width: 12px;
+      height: 1.2em;
+      background: var(--green);
+      margin-left: 4px;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    /* Progress bar */
+    .progress-bar {
+      width: 100%;
+      height: 20px;
+      background: var(--bg);
+      border: 1px solid var(--green);
+      margin: 12px 0;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--green);
+      width: 0%;
+      transition: width 0.3s;
+    }
+
+    /* Voice button */
+    .voice-btn {
+      background: var(--green);
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .voice-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .voice-btn.muted {
+      background: var(--border);
+      opacity: 0.5;
+    }
+
+    .voice-btn.active {
+      animation: pulse-voice 1s infinite;
+    }
+
+    @keyframes pulse-voice {
+      0%, 100% { box-shadow: 0 0 0 0 var(--green); }
+      50% { box-shadow: 0 0 20px 5px var(--green-dim); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <span class="logo-bear">🐻</span>
+      <span>BOUNTY BEAR v1.991</span>
+    </div>
+    <div class="system-status" id="systemStatus">SYSTEM READY</div>
+  </header>
+
+  <main>
+    <aside class="sidebar">
+      <div class="bear-container" id="bearContainer">
+        🐻
+      </div>
+      <div class="bear-status ready" id="bearStatus">READY</div>
+
+      <div class="stats-box">
+        <div class="stat-row">
+          <span>SEARCHES</span>
+          <span class="stat-value" id="searchCount">0</span>
+        </div>
+        <div class="stat-row">
+          <span>TARGETS FOUND</span>
+          <span class="stat-value" id="foundCount">0</span>
+        </div>
+        <div class="stat-row">
+          <span>BOUNTIES</span>
+          <span class="stat-value" id="bountyTotal">$0</span>
+        </div>
+      </div>
+    </aside>
+
+    <section class="terminal">
+      <div class="terminal-header">
+        <span>BOUNTY_BEAR_TERMINAL</span>
+        <span id="datetime"></span>
+      </div>
+      <div class="terminal-output" id="output">
+        <div class="terminal-line system">BOUNTY BEAR TRACKING SYSTEM v1.991</div>
+        <div class="terminal-line system">INSPIRED BY "UNTIL THE END OF THE WORLD" (1991)</div>
+        <div class="terminal-line">──────────────────────────────────────</div>
+        <div class="terminal-line">I'M THE BEAR. THE BOUNTY BEAR.</div>
+        <div class="terminal-line">I FIND THEM HERE. I FIND THEM THERE.</div>
+        <div class="terminal-line">I CAN FIND THEM ANYWHERE.</div>
+        <div class="terminal-line">THE BEAR - ADVANCED BOUNTY BANK PROGRAMMING.</div>
+        <div class="terminal-line">──────────────────────────────────────</div>
+        <div class="terminal-line system">ENTER A NAME TO BEGIN SEARCH...</div>
+      </div>
+      <div class="terminal-input-area">
+        <div class="click-hint" id="clickHint">👆 CLICK HERE TO START</div>
+        <span class="prompt">SEARCH></span>
+        <input type="text" class="terminal-input waiting" id="searchInput" placeholder="Enter target name..." autocomplete="off">
+        <button id="voiceBtn" class="voice-btn" title="Click to enable voice">🔊</button>
+      </div>
+    </section>
+
+    <aside class="info-panel">
+      <div class="info-section">
+        <div class="info-title">THE PROPHECY</div>
+        <div class="film-quote">
+          "I'm the Bear. The Bounty Bear. I find them here. I find them there. I can find them anywhere."
+        </div>
+        <div class="film-credit">— Until the End of the World, 1991</div>
+      </div>
+
+      <div class="info-section">
+        <div class="info-title">INSTRUCTIONS</div>
+        <ul class="instructions">
+          <li>Enter any name to search</li>
+          <li>Watch real-time feedback</li>
+          <li>Bear finds your target</li>
+          <li>Collect the bounty</li>
+          <li>Press V to toggle voice</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <div class="info-title">1991 vs 2026</div>
+        <div class="instructions">
+          <li>Film: Fiction</li>
+          <li>Now: Reality</li>
+          <li>AI agents exist</li>
+          <li>You're using one</li>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Preload original audio clip -->
+  <audio id="imSearchingAudio" src="audio/im-searching.mp3" preload="auto"></audio>
+
+  <script>
+    const output = document.getElementById('output');
+    const searchInput = document.getElementById('searchInput');
+    const bearContainer = document.getElementById('bearContainer');
+    const bearStatus = document.getElementById('bearStatus');
+    const systemStatus = document.getElementById('systemStatus');
+    const searchCountEl = document.getElementById('searchCount');
+    const foundCountEl = document.getElementById('foundCount');
+    const bountyTotalEl = document.getElementById('bountyTotal');
+    const datetimeEl = document.getElementById('datetime');
+
+    let searchCount = 0;
+    let foundCount = 0;
+    let bountyTotal = 0;
+    let voiceEnabled = true;
+
+    // ═══════════════════════════════════════════════════════════════
+    // WEB SPEECH API - Voice synthesis (works on all platforms)
+    // ═══════════════════════════════════════════════════════════════
+    const synth = window.speechSynthesis;
+    let bearVoice = null;
+
+    // Find a deep male voice for the bear - like the film
+    function loadVoices() {
+      const voices = synth.getVoices();
+      // Look for deep male voices by name
+      bearVoice = voices.find(v => v.name.includes('Daniel')) ||  // Mac deep male
+                  voices.find(v => v.name.includes('Alex')) ||    // Mac male
+                  voices.find(v => v.name.includes('Fred')) ||    // Mac deeper
+                  voices.find(v => v.name.includes('David')) ||   // Windows male
+                  voices.find(v => v.name.includes('Mark')) ||    // Windows male
+                  voices.find(v => v.name.toLowerCase().includes('male')) ||
+                  voices.find(v => v.lang === 'en-US') ||
+                  voices.find(v => v.lang.startsWith('en')) ||
+                  voices[0];
+      console.log('Bear voice:', bearVoice?.name, bearVoice?.lang);
+    }
+
+    // Load voices (async on some browsers)
+    if (synth.onvoiceschanged !== undefined) {
+      synth.onvoiceschanged = loadVoices;
+    }
+    loadVoices();
+
+    // Speak function - Web Speech API auto-queues, just don't cancel
+    function speak(text) {
+      if (!voiceEnabled || !synth) return;
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.voice = bearVoice;
+      // Natural male voice with deep cinematic register
+      utterance.rate = 1.0;   // Strong, measured
+      utterance.pitch = 0.8;  // Deeper male range
+      utterance.volume = 1.0;
+
+      synth.speak(utterance); // API queues automatically, no cancel = no cutoff
+    }
+
+    // Voice button element
+    const voiceBtn = document.getElementById('voiceBtn');
+    let audioInitialized = false;
+
+    // Initialize audio on first user interaction (required by browsers)
+    function initAudio() {
+      if (audioInitialized) return;
+      audioInitialized = true;
+      voiceBtn.classList.add('active');
+
+      // Hide the click hint
+      document.getElementById('clickHint').classList.add('hidden');
+      searchInput.classList.remove('waiting');
+
+      // Restore TTS intro
+      setTimeout(() => {
+        speak("I'm the bear. The bounty bear. I find them here. I find them there. I can find them anywhere. The bear - advanced bounty bank programming.");
+        addLine(`VOICE: ENABLED - Audio initialized`, 'system');
+      }, 100);
+
+      // Play the original film audio on first click
+      const introAudio = document.getElementById('imSearchingAudio');
+      if (introAudio) {
+        // Reset time in case it's played again
+        introAudio.currentTime = 0;
+        introAudio.play().catch(e => {
+          console.error("Audio block from browser:", e);
+          addLine(`SYSTEM LOG: Original audio playback blocked by browser`, 'system');
+        });
+      }
+    }
+
+    function stopAllAudio() {
+      if (synth) synth.cancel();
+      const imAudio = document.getElementById('imSearchingAudio');
+      if (imAudio) {
+        imAudio.pause();
+        imAudio.currentTime = 0;
+      }
+    }
+
+    // Voice button click handler - toggle mute after first init
+    voiceBtn.addEventListener('click', () => {
+      if (!audioInitialized) {
+        initAudio();
+      } else {
+        voiceEnabled = !voiceEnabled;
+        voiceBtn.classList.toggle('muted', !voiceEnabled);
+        voiceBtn.classList.toggle('active', voiceEnabled);
+        if (!voiceEnabled) {
+          stopAllAudio();
+        } else {
+          speak('Voice enabled');
+        }
+      }
+    });
+
+    // Init audio on first real user click (not programmatic focus)
+    searchInput.addEventListener('click', initAudio, { once: true });
+
+    // Toggle voice with 'V' key (only when not typing in search)
+    document.addEventListener('keydown', (e) => {
+      if ((e.key === 'v' || e.key === 'V') && document.activeElement !== searchInput) {
+        if (!audioInitialized) {
+          initAudio();
+        } else {
+          voiceEnabled = !voiceEnabled;
+          voiceBtn.classList.toggle('muted', !voiceEnabled);
+          voiceBtn.classList.toggle('active', voiceEnabled);
+          if (!voiceEnabled) {
+            stopAllAudio();
+          } else {
+            speak('Voice enabled');
+          }
+        }
+      }
+    });
+
+    // Update datetime
+    function updateDateTime() {
+      const now = new Date();
+      datetimeEl.textContent = now.toLocaleTimeString();
+    }
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
+
+    function addLine(text, className = '') {
+      const line = document.createElement('div');
+      line.className = `terminal-line ${className}`;
+      line.innerHTML = text;
+      output.appendChild(line);
+      output.scrollTop = output.scrollHeight;
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function setBearState(state) {
+      bearContainer.className = 'bear-container ' + state;
+      bearStatus.className = 'bear-status ' + state;
+
+      if (state === 'searching') {
+        bearStatus.textContent = 'SEARCHING...';
+        systemStatus.textContent = 'SEARCHING DATABASE';
+      } else if (state === 'found') {
+        bearStatus.textContent = 'TARGET FOUND';
+        systemStatus.textContent = 'POSITIVE ID';
+      } else {
+        bearStatus.textContent = 'READY';
+        systemStatus.textContent = 'SYSTEM READY';
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // OPENCLAW STREAMING INTEGRATION
+    // ═══════════════════════════════════════════════════════════════
+    const OPENCLAW_API_URL = "http://localhost:3000/api/stream"; // Put your gateway URL here
+
+    function performSearch(query) {
+      synth.cancel(); // Clear pending speech when starting new search
+      
+      const imAudio = document.getElementById('imSearchingAudio');
+      if (imAudio && voiceEnabled) {
+        imAudio.currentTime = 0;
+        imAudio.play().catch(console.error);
+      }
+      
+      searchInput.disabled = true;
+      searchCount++;
+      searchCountEl.textContent = searchCount;
+
+      setBearState('searching');
+      addLine(`──────────────────────────────────────`);
+      addLine(`SEARCHING OPENCLAW NETWORK FOR: "${query.toUpperCase()}"`, 'system');
+
+      // Connect to OpenClaw via Server-Sent Events (SSE)
+      // This assumes your OpenClaw agent emits serialized JSON objects per event
+      const encodedQuery = encodeURIComponent(query);
+      const stream = new EventSource(`${OPENCLAW_API_URL}?query=${encodedQuery}`);
+
+      stream.onmessage = (event) => {
+        try {
+          const clawData = JSON.parse(event.data);
+          
+          // 1. Status Update Events (e.g. "I'm searching", "Cross-referencing...")
+          if (clawData.type === 'status' || clawData.type === 'tool_execution') {
+            const msg = clawData.message || `EXECUTING TOOL: ${clawData.tool}...`;
+            addLine(msg.toUpperCase());
+            speak(msg);
+            
+            // Advance progress bar organically
+            let allBars = output.querySelectorAll('.progress-fill');
+            if (allBars.length === 0) {
+              addLine(`<div class="progress-bar"><div class="progress-fill" style="width: 10%"></div></div>`);
+              allBars = output.querySelectorAll('.progress-fill');
+            }
+            const lastBar = allBars[allBars.length - 1];
+            if (lastBar) {
+              const currentWidth = parseInt(lastBar.style.width) || 10;
+              lastBar.style.width = Math.min(currentWidth + 15, 95) + '%';
+            }
+          }
+
+          // 2. Final Result Payload Event
+          if (clawData.type === 'final_response') {
+            const allBars = output.querySelectorAll('.progress-fill');
+            if (allBars.length > 0) allBars[allBars.length - 1].style.width = '100%';
+            
+            setBearState('found');
+            addLine(`I GOT HIM!`, 'success');
+            speak("I got him!");
+
+            setTimeout(() => {
+              addLine(`THIS IS YOUR GUY!`, 'success');
+              speak("This is your guy!");
+            }, 2500);
+
+            setTimeout(() => {
+              // Print the actual target data returned by OpenClaw!
+              addLine(`<div class="result">
+                TARGET: ${query.toUpperCase()}<br>
+                PAYLOAD: ${clawData.content}<br>
+                STATUS: POSITIVE IDENTIFICATION<br>
+                CONFIDENCE: 99.9%
+              </div>`, 'highlight');
+              
+              foundCount++;
+              foundCountEl.textContent = foundCount;
+              bountyTotal += 500000;
+              bountyTotalEl.textContent = '$' + bountyTotal.toLocaleString();
+            }, 3000);
+
+            // 8-second cinematic pause before the big payout
+            setTimeout(() => {
+              addLine(`FINDERS FEE: <span class="money">$500,000</span>`, 'success');
+              speak("Finders fee: Five hundred thousand dollars!");
+            }, 11000); 
+
+            // Final wrap up
+            setTimeout(() => {
+              addLine(`──────────────────────────────────────`);
+              addLine(`THE BEAR ALWAYS GETS HIS MAN. 🐻`, 'system');
+              setBearState('ready');
+              searchInput.disabled = false;
+              searchInput.value = '';
+              searchInput.focus();
+            }, 14000);
+            
+            stream.close();
+          }
+          
+          // 3. Error Handling
+          if (clawData.type === 'error') {
+            addLine(`ERROR: ${clawData.message}`, 'system');
+            speak("I lost the trail.");
+            setBearState('ready');
+            searchInput.disabled = false;
+            stream.close();
+          }
+
+        } catch (err) {
+          console.error("OpenClaw parsing error:", err);
+        }
+      };
+
+      stream.onerror = (err) => {
+        console.error("OpenClaw SSE connection failed:", err);
+        addLine(`CONNECTION LOST TO OPENCLAW RELAY. RETRYING...`, 'system');
+        speak("Connection lost.");
+        setBearState('ready');
+        searchInput.disabled = false;
+        stream.close();
+      };
+    }
+
+    searchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && searchInput.value.trim()) {
+        performSearch(searchInput.value.trim());
+      }
+    });
+  </script>
+</body>
+</html>
