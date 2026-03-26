@@ -119,9 +119,9 @@ Currently, `bounty-bear.html` runs a simulated search (`performSearch`) to demon
 1. **The Backend (Brain)**:
    Copy the provided `openclaw/AGENT.md` personality into your OpenClaw gateway (`cp openclaw/AGENT.md ~/.openclaw/workspace/AGENT.md`). This guarantees the OpenClaw backend natively emits search status updates (`🔍 Searching...`, `📡 Querying...`) while it leverages its real tools to browse the web.
 2. **The Frontend (Face & Voice)**:
-   Rewrite `performSearch()` in `bounty-bear.html` to open a **WebSocket** or **Server-Sent Events (SSE)** connection to your OpenClaw API endpoint.
+   We already built a dedicated client interface for this! Open `openclaw/bounty-bear-client.html`. This is a clone of the cinematic demo but with the fake `sleep()` timers ripped out and replaced with a live `EventSource` connection.
 3. **The Synchronization**:
-   Instead of hardcoded `sleep()` timers, the frontend will listen for live status events streaming from OpenClaw. When a new status event arrives, the frontend prints it to the green CRT terminal and uses `speak()` to narrate exactly what the backend is doing in real-time, utilizing our perfectly tuned deep robotic voice.
+   Simply change `OPENCLAW_API_URL` inside the client file to point to your local OpenClaw streaming endpoint. When a new status event arrives, the frontend will automatically print it to the green CRT terminal and use `speak()` to narrate exactly what the backend is doing in real-time, utilizing our perfectly tuned deep robotic voice!
 
 This architecture transforms the project from a stunning 1991 movie replica into a completely functional, real-world AI agent interface.
 ---
