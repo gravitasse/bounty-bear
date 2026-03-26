@@ -756,28 +756,28 @@
       addLine(`I AM IDENTIFYING...`);
       speak("I am identifying");
 
-      await sleep(600);
+      await sleep(1800);
       addLine(`<div class="progress-bar"><div class="progress-fill" style="width: 30%"></div></div>`);
 
-      await sleep(800);
+      await sleep(2400);
       addLine(`CROSS-REFERENCING DATABASES...`);
 
-      await sleep(500);
+      await sleep(1500);
       // Update progress
       const allProgressBars = output.querySelectorAll('.progress-fill');
       const lastProgress = allProgressBars[allProgressBars.length - 1];
       if (lastProgress) lastProgress.style.width = '60%';
 
-      await sleep(700);
+      await sleep(2100);
       addLine(`MATCHING BIOMETRICS...`);
 
-      await sleep(600);
+      await sleep(1800);
       if (lastProgress) lastProgress.style.width = '90%';
 
-      await sleep(500);
+      await sleep(1500);
       if (lastProgress) lastProgress.style.width = '100%';
 
-      await sleep(400);
+      await sleep(1200);
       setBearState('found');
 
       addLine(`I GOT HIM!`, 'success');
