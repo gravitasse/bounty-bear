@@ -127,11 +127,18 @@ openclaw gateway restart
 ```
 
 ### Step 2: Configure the API Stream
+
 Open `openclaw/bounty-bear-client.html` in your code editor and locate the API URL variable on line 724:
+
 ```javascript
 const OPENCLAW_API_URL = "http://localhost:3000/api/stream"; // Change this!
 ```
-Update this variable to point completely to your OpenClaw SSE or WebSocket streaming endpoint.
+
+**End-User Example:**
+If your OpenClaw gateway is running locally on port 8080, your URL would look like this:
+`const OPENCLAW_API_URL = "http://127.0.0.1:8080/v1/agent/stream";`
+
+*Note: The Bounty Bear expects a valid Server-Sent Events (SSE) stream that emits serialized JSON objects.*
 
 ### Step 3: Match the Event Payload
 Ensure your OpenClaw gateway natively emits Server-Sent Events (SSE) formatted as serialized JSON. The frontend is listening for:
