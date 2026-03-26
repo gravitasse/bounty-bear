@@ -563,15 +563,19 @@
     const synth = window.speechSynthesis;
     let bearVoice = null;
 
-    // Find a good voice for the bear
+    // Find a good voice for the bear - prefer Russian accent!
     function loadVoices() {
       const voices = synth.getVoices();
-      // Prefer: UK English male, then any English male, then any English
-      bearVoice = voices.find(v => v.lang.startsWith('en') && v.name.includes('Male')) ||
+      // Priority: Russian voice (for accent), then deep/male English
+      bearVoice = voices.find(v => v.lang.startsWith('ru')) ||  // Russian first!
+                  voices.find(v => v.name.toLowerCase().includes('yuri')) ||
+                  voices.find(v => v.name.toLowerCase().includes('dmitri')) ||
+                  voices.find(v => v.name.toLowerCase().includes('maxim')) ||
+                  voices.find(v => v.lang.startsWith('en') && v.name.includes('Male')) ||
                   voices.find(v => v.lang.startsWith('en-GB')) ||
                   voices.find(v => v.lang.startsWith('en')) ||
                   voices[0];
-      console.log('Bear voice:', bearVoice?.name);
+      console.log('Bear voice:', bearVoice?.name, bearVoice?.lang);
     }
 
     // Load voices (async on some browsers)
@@ -586,8 +590,9 @@
 
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.voice = bearVoice;
-      utterance.rate = 1.1;
-      utterance.pitch = 0.9;
+      // Russian bear style: slower, deeper
+      utterance.rate = 0.9;
+      utterance.pitch = 0.7;
       utterance.volume = 1.0;
 
       synth.speak(utterance); // API queues automatically, no cancel = no cutoff
