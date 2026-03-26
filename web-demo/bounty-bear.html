@@ -453,6 +453,24 @@
       0%, 100% { box-shadow: 0 0 0 0 var(--green); }
       50% { box-shadow: 0 0 20px 5px var(--green-dim); }
     }
+    /* Bounty Log */
+    .bounty-log {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      padding: 8px;
+      background: rgba(0, 0, 0, 0.2);
+    }
+    .log-entry {
+      font-size: 1rem;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(0, 255, 65, 0.1);
+      display: flex;
+      justify-content: space-between;
+    }
+    .log-entry:last-child { border-bottom: none; }
+    .log-name { color: var(--green); }
+    .log-bounty { color: var(--amber); }
   </style>
 </head>
 <body>
@@ -540,6 +558,13 @@
           <li>You're using one</li>
         </div>
       </div>
+      <div class="info-section">
+        <div class="info-title">BOUNTY LOG</div>
+        <div class="bounty-log" id="bountyLog">
+          <!-- Log entries will be added here -->
+          <div class="log-entry" style="opacity: 0.5; justify-content: center;">NO RECORDS FOUND</div>
+        </div>
+      </div>
     </aside>
   </main>
 
@@ -560,7 +585,61 @@
     let searchCount = 0;
     let foundCount = 0;
     let bountyTotal = 0;
+    let bountyHistory = [];
     let voiceEnabled = true;
+
+    // ═══════════════════════════════════════════════════════════════
+    // WEB AUDIO API - Synthesized sound effects
+    // ═══════════════════════════════════════════════════════════════
+    let audioCtx = null;
+
+    function initAudioContext() {
+      if (audioCtx) return;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    function playClick() {
+      if (!audioCtx || !voiceEnabled) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.1);
+      
+      gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+      
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.1);
+    }
+
+    function playChaChing() {
+      if (!audioCtx || !voiceEnabled) return;
+      const osc1 = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      
+      osc1.frequency.setValueAtTime(880, audioCtx.currentTime);
+      osc1.frequency.exponentialRampToValueAtTime(1760, audioCtx.currentTime + 0.1);
+      
+      osc2.frequency.setValueAtTime(1320, audioCtx.currentTime);
+      
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+      
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(audioCtx.destination);
+      
+      osc1.start();
+      osc2.start();
+      osc1.stop(audioCtx.currentTime + 0.5);
+      osc2.stop(audioCtx.currentTime + 0.5);
+    }
 
     // ═══════════════════════════════════════════════════════════════
     // WEB SPEECH API - Voice synthesis (works on all platforms)
@@ -612,6 +691,7 @@
     function initAudio() {
       if (audioInitialized) return;
       audioInitialized = true;
+      initAudioContext();
       voiceBtn.classList.add('active');
 
       // Hide the click hint
@@ -690,12 +770,70 @@
     setInterval(updateDateTime, 1000);
     updateDateTime();
 
+    // ═══════════════════════════════════════════════════════════════
+    // SESSION PERSISTENCE
+    // ═══════════════════════════════════════════════════════════════
+    function saveSession() {
+      const session = {
+        searchCount,
+        foundCount,
+        bountyTotal,
+        bountyHistory
+      };
+      localStorage.setItem('bountyBearSession', JSON.stringify(session));
+    }
+
+    function loadSession() {
+      const saved = localStorage.getItem('bountyBearSession');
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          searchCount = data.searchCount || 0;
+          foundCount = data.foundCount || 0;
+          bountyTotal = data.bountyTotal || 0;
+          bountyHistory = data.bountyHistory || [];
+          
+          searchCountEl.textContent = searchCount;
+          foundCountEl.textContent = foundCount;
+          bountyTotalEl.textContent = '$' + bountyTotal.toLocaleString();
+          renderBountyLog();
+        } catch (e) {
+          console.error("Failed to load session:", e);
+        }
+      }
+    }
+
+    function addToLog(name, bounty) {
+      bountyHistory.unshift({ name, bounty, date: new Date().toISOString() });
+      if (bountyHistory.length > 20) bountyHistory.pop();
+      renderBountyLog();
+      saveSession();
+    }
+
+    function renderBountyLog() {
+      const logContainer = document.getElementById('bountyLog');
+      if (bountyHistory.length === 0) {
+        logContainer.innerHTML = '<div class="log-entry" style="opacity: 0.5; justify-content: center;">NO RECORDS FOUND</div>';
+        return;
+      }
+      
+      logContainer.innerHTML = bountyHistory.map(entry => `
+        <div class="log-entry">
+          <span class="log-name">${entry.name.toUpperCase()}</span>
+          <span class="log-bounty">$${entry.bounty.toLocaleString()}</span>
+        </div>
+      `).join('');
+    }
+
+    loadSession();
+
     function addLine(text, className = '') {
       const line = document.createElement('div');
       line.className = `terminal-line ${className}`;
       line.innerHTML = text;
       output.appendChild(line);
       output.scrollTop = output.scrollHeight;
+      playClick();
     }
 
     function sleep(ms) {
@@ -814,6 +952,8 @@
       await sleep(8000);
       addLine(`FINDERS FEE: <span class="money">$500,000</span>`, 'success');
       speak("Finders fee: Five hundred thousand dollars!");
+      playChaChing();
+      addToLog(query, bounty);
 
       await sleep(800);
       addLine(`──────────────────────────────────────`);
