@@ -271,6 +271,54 @@
       display: flex;
       gap: 12px;
       background: rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    /* Click to start hint */
+    .click-hint {
+      position: absolute;
+      top: -40px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--amber);
+      color: var(--bg);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      animation: bounce-hint 1s ease-in-out infinite;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .click-hint::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 8px solid var(--amber);
+    }
+
+    .click-hint.hidden {
+      display: none;
+    }
+
+    @keyframes bounce-hint {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-5px); }
+    }
+
+    /* Pulsing glow on input before click */
+    .terminal-input.waiting {
+      animation: pulse-input 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-input {
+      0%, 100% { box-shadow: 0 0 0 0 var(--green-dim); }
+      50% { box-shadow: 0 0 20px 5px var(--green-dim); }
     }
 
     .prompt {
@@ -454,8 +502,9 @@
         <div class="terminal-line system">ENTER A NAME TO BEGIN SEARCH...</div>
       </div>
       <div class="terminal-input-area">
+        <div class="click-hint" id="clickHint">👆 CLICK HERE TO START</div>
         <span class="prompt">SEARCH></span>
-        <input type="text" class="terminal-input" id="searchInput" placeholder="Enter target name..." autocomplete="off">
+        <input type="text" class="terminal-input waiting" id="searchInput" placeholder="Enter target name..." autocomplete="off">
         <button id="voiceBtn" class="voice-btn" title="Click to enable voice">🔊</button>
       </div>
     </section>
@@ -553,6 +602,10 @@
       if (audioInitialized) return;
       audioInitialized = true;
       voiceBtn.classList.add('active');
+
+      // Hide the click hint
+      document.getElementById('clickHint').classList.add('hidden');
+      searchInput.classList.remove('waiting');
 
       // Speak the intro immediately
       speak("I'm the bear. The bounty bear. I can find them anywhere!");
