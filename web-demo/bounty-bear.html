@@ -760,7 +760,8 @@
 
       await sleep(500);
       // Update progress
-      const lastProgress = output.querySelector('.progress-fill');
+      const allProgressBars = output.querySelectorAll('.progress-fill');
+      const lastProgress = allProgressBars[allProgressBars.length - 1];
       if (lastProgress) lastProgress.style.width = '60%';
 
       await sleep(700);
