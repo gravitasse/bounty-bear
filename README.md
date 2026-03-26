@@ -110,20 +110,48 @@ A tribute showing 1991 vs 2026 - what the film predicted vs what we have now.
 
 ---
 
-## OpenClaw Integration Architecture
+## OpenClaw Skill Installation Guide
 
 The Bounty Bear UI is fully positioned to act as the actual frontend terminal for an OpenClaw agent skill.
 
-Currently, `bounty-bear.html` runs a simulated search (`performSearch`) to demonstrate the cinematic timing, audio, and CRT aesthetic. To turn this into a live, functional skill:
+We have provided a dedicated live-wired template at `openclaw/bounty-bear-client.html` that strips out the cinematic fake timers and replaces them with a live `EventSource` web stream ready to connect to your local OpenClaw server.
 
-1. **The Backend (Brain)**:
-   Copy the provided `openclaw/AGENT.md` personality into your OpenClaw gateway (`cp openclaw/AGENT.md ~/.openclaw/workspace/AGENT.md`). This guarantees the OpenClaw backend natively emits search status updates (`🔍 Searching...`, `📡 Querying...`) while it leverages its real tools to browse the web.
-2. **The Frontend (Face & Voice)**:
-   We already built a dedicated client interface for this! Open `openclaw/bounty-bear-client.html`. This is a clone of the cinematic demo but with the fake `sleep()` timers ripped out and replaced with a live `EventSource` connection.
-3. **The Synchronization**:
-   Simply change `OPENCLAW_API_URL` inside the client file to point to your local OpenClaw streaming endpoint. When a new status event arrives, the frontend will automatically print it to the green CRT terminal and use `speak()` to narrate exactly what the backend is doing in real-time, utilizing our perfectly tuned deep robotic voice!
+### Step 1: Install the Agent Personality
+Your OpenClaw backend needs to know it is the Bounty Bear so it behaves correctly and emits the proper cinematic status updates.
+```bash
+# Copy the provided personality definition to your OpenClaw agent directory
+cp openclaw/AGENT.md ~/.openclaw/workspace/AGENT.md
 
-This architecture transforms the project from a stunning 1991 movie replica into a completely functional, real-world AI agent interface.
+# Restart your gateway to load the new personality
+openclaw gateway restart
+```
+
+### Step 2: Configure the API Stream
+Open `openclaw/bounty-bear-client.html` in your code editor and locate the API URL variable on line 724:
+```javascript
+const OPENCLAW_API_URL = "http://localhost:3000/api/stream"; // Change this!
+```
+Update this variable to point completely to your OpenClaw SSE or WebSocket streaming endpoint.
+
+### Step 3: Match the Event Payload
+Ensure your OpenClaw gateway natively emits Server-Sent Events (SSE) formatted as serialized JSON. The frontend is listening for:
+```json
+// During tool execution or thinking:
+{ 
+  "type": "status", 
+  "message": "Cross-referencing global databases..." 
+}
+
+// When the final result is acquired:
+{ 
+  "type": "final_response", 
+  "content": "John Doe, Age 42, currently located in Berlin." 
+}
+```
+
+### Step 4: Launch the Interface
+You don't need NPM, React, or a build step. Simply double-click `openclaw/bounty-bear-client.html` to open it in your browser natively. 
+Type your target name, hit Enter, and the retro UI will dynamically narrate OpenClaw's live web scraping and thinking process exactly like the 1991 movie!
 ---
 
 ## Tech Stack
