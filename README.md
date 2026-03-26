@@ -141,20 +141,43 @@ If your OpenClaw gateway is running locally on port 8080, your URL would look li
 *Note: The Bounty Bear expects a valid Server-Sent Events (SSE) stream that emits serialized JSON objects.*
 
 ### Step 3: Match the Event Payload
-Ensure your OpenClaw gateway natively emits Server-Sent Events (SSE) formatted as serialized JSON. The frontend is listening for:
-```json
-// During tool execution or thinking:
-{ 
-  "type": "status", 
-  "message": "Cross-referencing global databases..." 
-}
 
-// When the final result is acquired:
-{ 
-  "type": "final_response", 
-  "content": "John Doe, Age 42, currently located in Berlin." 
-}
-```
+Your backend (OpenClaw, n8n, or a custom Python/Node script) must send data in a specific "Streaming" format called **Server-Sent Events (SSE)**. 
+
+Think of this like a "text message feed" from your server to the Bounty Bear. For the Bear to understand your messages, they need to be formatted as specific JSON "packets":
+
+1.  **Thinking/Searching Packets**: For every live update (like querying a site), send:
+    `{ "type": "status", "message": "Querying LinkedIn..." }`
+2.  **Success Packets**: When the target is caught, send:
+    `{ "type": "final_response", "content": "Full name, location, and bio here." }`
+
+#### How do I actually do this?
+
+- **If you are using Node.js / Express**:
+  Your server route should look like this. Note the `text/event-stream` header which is required for the "live" feel:
+  ```javascript
+  app.get('/api/stream', (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+
+    // To send a progress update:
+    const statusUpdate = { type: 'status', message: 'Hacking mainframe...' };
+    res.write(`data: ${JSON.stringify(statusUpdate)}\n\n`);
+
+    // To send the final result:
+    const result = { type: 'final_response', content: 'John Doe caught in Berlin.' };
+    res.write(`data: ${JSON.stringify(result)}\n\n`);
+  });
+  ```
+
+- **If you are using n8n**:
+  In your "HTTP Response" node:
+  1. Set **Response Mode** to `Last Node`.
+  2. Set a custom Header: `Content-Type: text/event-stream`.
+  3. In the Body, use an expression to format your output exactly like the JSON packets above, prefixed with `data: ` and ending with two newlines (`\n\n`).
+
+- **Troubleshooting**: 
+  If the Bear doesn't speak, check your browser's "Network" tab. Each message from your server **must** start with `data: ` and contain the exact JSON keys `"type"` and `"message"` or `"content"`.
 
 ### Step 4: Launch the Interface
 You don't need NPM, React, or a build step. Simply double-click `openclaw/bounty-bear-client.html` to open it in your browser natively. 
