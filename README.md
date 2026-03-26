@@ -160,9 +160,21 @@ Type your target name, hit Enter, and the retro UI will dynamically narrate Open
 | :-------- | :--------------- | :------------------------------- |
 | UI | Pure HTML/CSS/JS | Zero dependencies, runs anywhere |
 | Voice | Web Speech API | Built into all browsers |
+| Audio | Web Audio API | Low-latency synthesis for clicks |
+| Persistence | LocalStorage | Remembers your bounties & history |
 | Offline | Service Worker | PWA support |
 | Styling | CSS Variables | Easy theming |
 | Fonts | Google Fonts | VT323, Press Start 2P |
+
+## Key Features
+
+- **Retro Terminal UI**: Authentic CRT scanlines and phosphor green aesthetic.
+- **Cinematic Voice**: Deep robotic narration with film-accurate dialogue and pauses.
+- **Synthesized Immersion**: Mechanical keyboard clicks and data-crunching sounds generated in real-time.
+- **Bounty Log**: Historically tracks all targets ever identified and caught.
+- **Session Persistence**: Your total bounty count and catch history save automatically.
+- **Universal Compatibility**: Zero-dependency PWA runs on anything from a 1991 laptop to a 2026 smartphone.
+- **OpenClaw Skill Native**: Architected to plug directly into OpenClaw as a live frontend.
 
 ---
 
@@ -208,11 +220,11 @@ The prophecy typed itself.
 ## Future Ideas
 
 - [ ] Real web search integration (Tavily, DuckDuckGo)
-- [ ] Long-term memory (IndexedDB, vector store)
+- [x] Long-term memory (Session Persistence)
 - [ ] Piper TTS WASM for better voice
 - [ ] Actual person lookup APIs
 - [ ] OpenClaw skill package
-- [ ] Sound effects (modem dial, cash register)
+- [x] Sound effects (Synthesized clicks)
 
 ---
 
