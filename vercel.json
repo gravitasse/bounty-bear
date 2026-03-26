@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "name": "bounty-bear",
+  "rewrites": [
+    { "source": "/", "destination": "/web-demo/bounty-bear.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
+      ]
+    }
+  ]
+}

@@ -2,6 +2,8 @@
 
 > *"I'm the Bear. The Bounty Bear. I can find them anywhere!"*
 
+**🔗 Live Demo: [bounty-bear.vercel.app](https://bounty-bear.vercel.app)**
+
 An AI search agent inspired by **["Until the End of the World" (1991)](https://en.wikipedia.org/wiki/Until_the_End_of_the_World)** directed by Wim Wenders.
 
 **Watch the original scene:** [YouTube](https://youtu.be/kKhzsx2gVgM)
