@@ -497,7 +497,9 @@
         <div class="terminal-line system">INSPIRED BY "UNTIL THE END OF THE WORLD" (1991)</div>
         <div class="terminal-line">──────────────────────────────────────</div>
         <div class="terminal-line">I'M THE BEAR. THE BOUNTY BEAR.</div>
+        <div class="terminal-line">I FIND THEM HERE. I FIND THEM THERE.</div>
         <div class="terminal-line">I CAN FIND THEM ANYWHERE.</div>
+        <div class="terminal-line">THE BEAR - ADVANCED BOUNTY BANK PROGRAMMING.</div>
         <div class="terminal-line">──────────────────────────────────────</div>
         <div class="terminal-line system">ENTER A NAME TO BEGIN SEARCH...</div>
       </div>
@@ -513,7 +515,7 @@
       <div class="info-section">
         <div class="info-title">THE PROPHECY</div>
         <div class="film-quote">
-          "I'm the Bear. The Bounty Bear. I can find them anywhere!"
+          "I'm the Bear. The Bounty Bear. I find them here. I find them there. I can find them anywhere."
         </div>
         <div class="film-credit">— Until the End of the World, 1991</div>
       </div>
@@ -613,8 +615,8 @@
       document.getElementById('clickHint').classList.add('hidden');
       searchInput.classList.remove('waiting');
 
-      // Speak the intro immediately
-      speak("I'm the bear. The bounty bear. I can find them anywhere!");
+      // Speak the intro - exact quote from the film
+      speak("I'm the bear. The bounty bear. I find them here. I find them there. I can find them anywhere. The bear. Advanced bounty bank programming.");
     }
 
     // Voice button click handler - toggle mute after first init
