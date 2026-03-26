@@ -936,12 +936,13 @@
             }, 2500);
 
             setTimeout(() => {
-              // Print the actual target data returned by OpenClaw!
+              // Use confidence from API if provided, otherwise generate a random one
+              const confidence = clawData.confidence || (97 + Math.random() * 2.9).toFixed(1);
               addLine(`<div class="result">
                 TARGET: ${query.toUpperCase()}<br>
                 PAYLOAD: ${clawData.content}<br>
                 STATUS: POSITIVE IDENTIFICATION<br>
-                CONFIDENCE: 99.9%
+                CONFIDENCE: ${confidence}%
               </div>`, 'highlight');
               
               foundCount++;

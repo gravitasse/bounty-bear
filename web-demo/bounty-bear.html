@@ -941,11 +941,13 @@
       ];
       const location = locations[Math.floor(Math.random() * locations.length)];
 
+      const confidence = (97 + Math.random() * 2.9).toFixed(1);
+
       addLine(`<div class="result">
         TARGET: ${query.toUpperCase()}<br>
         LOCATION: ${location}<br>
         STATUS: POSITIVE IDENTIFICATION<br>
-        CONFIDENCE: 99.7%
+        CONFIDENCE: ${confidence}%
       </div>`, 'highlight');
 
       foundCount++;
