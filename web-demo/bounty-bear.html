@@ -300,12 +300,13 @@
         gap: 4px;
       }
       .mobile-compact .bear-container {
-        width: 20px;
-        height: 20px;
-        font-size: 12px;
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+        border-width: 2px;
       }
       .mobile-compact .bear-status {
-        font-size: 0.65rem;
+        font-size: 0.8rem;
       }
       .mobile-compact .target-card {
         display: flex;
@@ -345,6 +346,16 @@
     @keyframes slideIn {
       from { transform: translateY(-10px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
+    }
+    
+    @keyframes pulse-ready {
+      0%, 100% { box-shadow: 0 0 8px var(--green-dim); border-color: var(--green); }
+      50% { box-shadow: 0 0 20px 5px var(--green-dim); border-color: var(--amber); }
+    }
+    
+    .bear-container.ready {
+      animation: pulse-ready 2s infinite ease-in-out;
+      cursor: pointer;
     }
 
     /* Sidebar - Bear Avatar */
