@@ -153,13 +153,15 @@
         display: flex;
         flex-direction: row;
         align-items: center;
-        border-right: none;
-        border-bottom: 1px solid var(--green);
-        padding: 10px 24px;
+        border: 1px solid var(--green);
+        margin: 8px;
+        border-radius: 4px;
+        padding: 10px 16px;
         gap: 12px;
         min-height: auto;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         overflow: visible; /* Prevent glow clipping */
+        background: rgba(0, 0, 0, 0.3);
       }
       .bear-container {
         width: 32px;
@@ -296,8 +298,9 @@
 
       /* Found / Compact State (Bear SMALL) */
       .mobile-compact .sidebar {
-        padding: 12px 24px;
-        gap: 12px;
+        padding: 8px 12px;
+        margin: 4px 8px;
+        gap: 8px;
         overflow: visible;
       }
       .mobile-compact .bear-container {
@@ -361,7 +364,9 @@
 
     /* Sidebar - Bear Avatar */
     .sidebar {
-      border-right: 2px solid var(--green);
+      border: 2px solid var(--green);
+      margin: 8px;
+      border-radius: 4px;
       padding: 16px;
       display: flex;
       flex-direction: column;
@@ -369,6 +374,7 @@
       gap: 8px;
       background: var(--terminal-bg);
       overflow-y: auto;
+      overflow-x: visible;
       min-height: 0;
     }
     
