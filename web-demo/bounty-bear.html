@@ -1087,6 +1087,7 @@
     // Mobile: auto-scale sidebar when user taps search input
     const mainArea = document.querySelector('main');
     const isMobile = () => window.innerWidth <= 1024;
+    let forceCompact = false;
     
     searchInput.addEventListener('focus', () => {
       if (isMobile()) mainArea.classList.add('mobile-compact');
@@ -1094,7 +1095,27 @@
     
     searchInput.addEventListener('blur', () => {
       // Small delay prevents jarring bounce if tapping around
-      setTimeout(() => { if (isMobile()) mainArea.classList.remove('mobile-compact'); }, 300);
+      setTimeout(() => { 
+        if (isMobile() && !forceCompact) mainArea.classList.remove('mobile-compact'); 
+      }, 300);
+    });
+
+    bearContainer.addEventListener('click', () => {
+      if (bearContainer.classList.contains('searching')) return;
+      
+      // Reset input state but preserve terminal scroll history
+      searchInput.value = '';
+      searchInput.disabled = false;
+      forceCompact = false;
+      
+      if (isMobile()) {
+        mainArea.classList.remove('mobile-compact');
+        searchInput.blur();
+      }
+      
+      setBearState('ready');
+      addLine('──────────────────────────────────────');
+      addLine('SYSTEM RESET. ENTER A NAME TO BEGIN SEARCH...', 'system');
     });
 
     loadSession();
@@ -1128,6 +1149,9 @@
     }
 
     async function performSearch(query) {
+      forceCompact = true;
+      if (isMobile()) mainArea.classList.add('mobile-compact');
+      
       synth.cancel(); // Clear pending speech when starting new search
       
       const imAudio = document.getElementById('imSearchingAudio');
@@ -1236,7 +1260,8 @@
       setBearState('ready');
       searchInput.disabled = false;
       searchInput.value = '';
-      searchInput.focus();
+      
+      addLine(`CLICK THE BEAR ICON TO RESET TERMINAL AND START NEW SEARCH.`, 'system');
     }
 
     searchInput.addEventListener('keypress', (e) => {
