@@ -81,7 +81,19 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
   const [findersFee, setFindersFee] = useState(0)
 
   const outputRef = useRef<HTMLDivElement>(null)
+  const audioActivated = useRef(false)
   const datetime = useDateTime()
+
+  // Speak intro on first interaction — audio context requires a user gesture
+  function activateAudio() {
+    if (audioActivated.current) return
+    audioActivated.current = true
+    initAudio()
+    speakQueued("I'm the Bear. The Bounty Bear.")
+    speakQueued("I find them here. I find them there.")
+    speakQueued("I can find them anywhere.")
+    speakQueued("The Bear. Advanced Bounty Bear programming.")
+  }
 
   // Auto-scroll terminal
   useEffect(() => {
@@ -133,7 +145,7 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
   }
 
   function selectBounty(b: Bounty) {
-    initAudio()
+    activateAudio()
     playBlip()
     setSelectedBounty(b)
   }
@@ -152,7 +164,7 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
     setProgress(0)
     setBearState('searching')
     setBearStatusLabel('SEARCHING...')
-    initAudio()
+    activateAudio()
     playImSearchingMp3()
 
     const target = selectedBounty
@@ -303,7 +315,11 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
       <main style={{ position: 'relative' }}>
         {/* ── Sidebar ── */}
         <aside className="sidebar">
-          <div className={`bear-container ${bearState}`}>🐻</div>
+          <div
+            className={`bear-container ${bearState}`}
+            onClick={activateAudio}
+            title="Click to activate bear voice"
+          >🐻</div>
           <div className={`bear-status ${bearState}`}>{bearStatusLabel}</div>
 
           <div className="stats-box">
@@ -357,8 +373,12 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
               </>
             ) : (
               <>
-                <div className="terminal-line system">BOUNTY BEAR GAME SYSTEM v1.991</div>
-                <div className="terminal-line system">DISTRIBUTED ASYNC GEOCACHING PROTOCOL ACTIVE</div>
+                <div className="terminal-line system">BOUNTY BEAR TRACKING SYSTEM v1.991</div>
+                <div className="terminal-line">──────────────────────────────────────</div>
+                <div className="terminal-line">I'M THE BEAR. THE BOUNTY BEAR.</div>
+                <div className="terminal-line">I FIND THEM HERE. I FIND THEM THERE.</div>
+                <div className="terminal-line">I CAN FIND THEM ANYWHERE.</div>
+                <div className="terminal-line system">THE BEAR — ADVANCED BOUNTY BEAR PROGRAMMING.</div>
                 <div className="terminal-line">──────────────────────────────────────</div>
 
                 {bounties.length === 0 ? (
@@ -408,13 +428,13 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
 
           {!showingSequence && (
             <div className="terminal-input-area">
-              <button className="action-btn primary" onClick={() => setShowCreate(true)}>
+              <button className="action-btn primary" onClick={() => { activateAudio(); setShowCreate(true) }}>
                 ► POST BOUNTY
               </button>
-              <button className="action-btn" onClick={() => setShowLeaderboard(true)}>
+              <button className="action-btn" onClick={() => { activateAudio(); setShowLeaderboard(true) }}>
                 🏆 LEADERBOARD
               </button>
-              <button className="action-btn" onClick={() => setShowMap(true)}>
+              <button className="action-btn" onClick={() => { activateAudio(); setShowMap(true) }}>
                 🗺️ MAP
               </button>
             </div>
