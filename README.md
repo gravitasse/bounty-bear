@@ -49,7 +49,9 @@ Works everywhere:
 - CRT scanline effect
 - Phosphor green on black
 - Real-time progress bars
-- Animated bear avatar
+- **Dynamic Mobile Interface**: Auto-scales for maximum terminal visibility
+- **Big Bear Search**: Prominent search animation that takes center stage
+- **Ready Pulse**: Rhythmic visual CTA on the reset button when search is complete
 
 ### The Dialogue (from the 1991 film)
 
@@ -234,14 +236,10 @@ Type your target name, hit Enter, and the retro UI will dynamically narrate Open
 
 ## Key Features
 
-- **Retro Terminal UI**: Authentic CRT scanlines and phosphor green aesthetic.
-- **Cinematic Voice**: Deep robotic narration with film-accurate dialogue and pauses.
-- **Cha-Ching Sound**: Synthesized success chime when a target is caught.
-- **Dynamic Confidence**: Each catch reports a slightly different confidence score (97–99.9%).
-- **Bounty Log**: Tracks all targets ever caught, with a **Clear** button to reset.
-- **Session Persistence**: Your total bounty count and catch history save automatically via `localStorage`.
-- **In-Browser Settings**: ⚙️ gear icon opens a config panel to set your API URL — no code editing needed.
-- **Universal Compatibility**: Zero-dependency PWA runs on anything from a 1991 laptop to a 2026 smartphone.
+- **Dynamic Mobile Flow**: Bear icon scales up to 100px during search, then auto-shrinks to 44px to reveal a persistent 'Positive ID' badge once found.
+- **Pulsing Ready State**: A rhythmic green/amber glow appears on the Bear icon when search is complete, signaling it's ready for a manual reset.
+- **Manual Layout Reset**: Clicking the Bear icon restores the full-sized layout while preserving terminal scroll history.
+- **Universal Compatibility**: Zero-dependency Flexbox architecture ensures 100% stability on iOS Safari and modern mobile browsers.
 - **OpenClaw Skill Native**: Architected to plug directly into OpenClaw as a live frontend.
 
 ---
