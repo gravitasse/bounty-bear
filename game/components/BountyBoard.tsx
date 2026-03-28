@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { initAudio, playChaChing, speakQueued, playImSearchingMp3, playBlip, setVoiceMuted, getVoiceMuted } from '@/lib/audio'
+import { initAudio, playChaChing, speakQueued, playImSearchingMp3, playBlip, setVoiceMuted, getVoiceMuted, stopAllAudio } from '@/lib/audio'
 import CreateBountyModal from './CreateBountyModal'
 import BountyDetail from './BountyDetail'
 import LeaderboardModal from './LeaderboardModal'
@@ -212,8 +212,7 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
     setBearState('searching')
     setBearStatusLabel('SEARCHING...')
     activateAudio()
-    // Clear any in-flight intro speech so claim sequence starts clean
-    if (typeof window !== 'undefined') window.speechSynthesis.cancel()
+    stopAllAudio()
     playImSearchingMp3()
 
     const target = selectedBounty

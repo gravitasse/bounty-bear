@@ -103,9 +103,26 @@ export function playBlip() {
   osc.stop(audioCtx.currentTime + 0.08)
 }
 
+let currentMp3: HTMLAudioElement | null = null
+
 export function playImSearchingMp3() {
   if (typeof window === 'undefined') return
+  stopImSearchingMp3()
   const audio = new Audio('/demo/audio/im-searching.mp3')
   audio.volume = 0.8
   audio.play().catch(() => {})
+  currentMp3 = audio
+  audio.onended = () => { currentMp3 = null }
+}
+
+export function stopImSearchingMp3() {
+  if (!currentMp3) return
+  currentMp3.pause()
+  currentMp3.currentTime = 0
+  currentMp3 = null
+}
+
+export function stopAllAudio() {
+  stopImSearchingMp3()
+  if (typeof window !== 'undefined') window.speechSynthesis.cancel()
 }
