@@ -175,13 +175,30 @@ From docs/GAME_DESIGN.md:
 - CRT aesthetic applied to game UI
 - Bear voice + cha-ching on claim
 
-### Phase 3 — Next Up
-- Leaderboard
+### Phase 3 — UI Overhaul (Shipped ✅)
+- Full 3-column layout matching demo exactly: sidebar (280px bear+stats) | terminal (1fr) | info panel (320px)
+- Press Start 2P font for header logo (via next/font/google variable)
+- Bear container with state-based animations: ready (green pulse-ready), searching (amber pulse), found (green glow)
+- Bear status label updates live during claim sequence
+- Cinematic claim sequence stays INSIDE the layout — no fullscreen takeover
+  - Terminal column shows progress bar + animated terminal lines during claim
+  - Bear sidebar animates through searching → found states
+  - Info panel shows bounty details / passcode form when bounty selected, target locked info during sequence
+- Selected bounty highlighted amber in terminal list
+- COLLECT BOUNTY button appears in terminal after sequence completes
+- All CSS variables match demo exactly: --terminal-bg: #0d1117, --text: #e0e0e0, --border: #333, --amber: #ffb000
+- Mobile: bear+stats in compact horizontal row, info panel toggleable with 📋 button
+
+### Phase 4 — Next Up
+- Leaderboard page
 - Proximity-based clue unlocking (needs GPS polling during hunt)
-- Map view
-- Notifications
+- Map view (Mapbox planned)
+- Notifications (bounty claimed, new bounty nearby)
 - Profile page
-- Polish the claim flow to fully match demo cinematic experience
+- Supabase Realtime — live bounty board updates without page reload
+- Server-side passcode verification (currently client-side — fine for MVP)
+- Bounty expiry / time limits
+- Photo or QR code verification method
 
 ---
 
