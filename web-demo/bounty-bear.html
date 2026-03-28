@@ -170,14 +170,15 @@
         margin: 0 !important;
       }
       .bear-container { 
-        width: 48px !important; 
-        height: 48px !important; 
-        font-size: 26px !important;
-        outline-width: 2px !important;
+        width: 100px !important; 
+        height: 100px !important; 
+        font-size: 60px !important;
+        outline-width: 3px !important;
         margin: 0 auto !important;
         display: flex !important;
         justify-content: center !important;
         align-items: center !important;
+        flex-shrink: 0 !important;
       }
       .bear-status {
         font-size: 0.8rem;
@@ -280,13 +281,21 @@
       .target-card .target-location { font-size: 1.2rem !important; color: var(--text); }
 
       .stats-box {
-        display: flex !important;
+        display: none !important; /* Hide stats on initial load/searching */
         flex-direction: row !important;
         justify-content: space-around !important;
         width: 100% !important;
         padding: 12px 0 !important;
         border-top: 1px solid var(--green-dim) !important;
         background: none !important;
+      }
+      .mobile-compact .stats-box, .target-found .stats-box { display: flex !important; }
+
+      .mobile-compact .bear-container {
+        width: 48px !important;
+        height: 48px !important;
+        font-size: 26px !important;
+        outline-width: 2px !important;
       }
       .mobile-compact .bear-status { font-size: 1.1rem; text-align: center; }
       .mobile-compact .target-card { display: block !important; }
