@@ -1029,6 +1029,14 @@
     setInterval(updateDateTime, 1000);
     updateDateTime();
 
+    // Security: HTML escape function to prevent XSS attacks
+    function escapeHtml(text) {
+      if (typeof text !== 'string') return text;
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
     function addLine(text, className = '') {
       const line = document.createElement('div');
       line.className = `terminal-line ${className}`;
@@ -1147,7 +1155,7 @@
 
       setBearState('searching');
       addLine(`──────────────────────────────────────`);
-      addLine(`SEARCHING OPENCLAW NETWORK FOR: "${query.toUpperCase()}"`, 'system');
+      addLine(`SEARCHING OPENCLAW NETWORK FOR: "${escapeHtml(query.toUpperCase())}"`, 'system');
 
       // Connect to OpenClaw via Server-Sent Events (SSE)
       // This assumes your OpenClaw agent emits serialized JSON objects per event
@@ -1160,8 +1168,8 @@
           
           // 1. Status Update Events (e.g. "I'm searching", "Cross-referencing...")
           if (clawData.type === 'status' || clawData.type === 'tool_execution') {
-            const msg = clawData.message || `EXECUTING TOOL: ${clawData.tool}...`;
-            addLine(msg.toUpperCase());
+            const msg = clawData.message || `EXECUTING TOOL: ${escapeHtml(clawData.tool)}...`;
+            addLine(escapeHtml(msg.toUpperCase()));
             speak(msg);
             
             // Advance progress bar organically
@@ -1207,8 +1215,8 @@
               // Use confidence from API if provided, otherwise generate a random one
               const confidence = clawData.confidence || (97 + Math.random() * 2.9).toFixed(1);
               addLine(`<div class="result">
-                TARGET: ${query.toUpperCase()}<br>
-                PAYLOAD: ${clawData.content}<br>
+                TARGET: ${escapeHtml(query.toUpperCase())}<br>
+                PAYLOAD: ${escapeHtml(clawData.content)}<br>
                 STATUS: POSITIVE IDENTIFICATION<br>
                 CONFIDENCE: ${confidence}%
               </div>`, 'highlight');
@@ -1249,7 +1257,7 @@
           
           // 3. Error Handling
           if (clawData.type === 'error') {
-            addLine(`ERROR: ${clawData.message}`, 'system');
+            addLine(`ERROR: ${escapeHtml(clawData.message)}`, 'system');
             speak("I lost the trail.");
             setBearState('ready');
             searchInput.disabled = false;

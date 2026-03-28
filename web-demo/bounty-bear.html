@@ -1272,6 +1272,14 @@
 
     loadSession();
 
+    // Security: HTML escape function to prevent XSS attacks
+    function escapeHtml(text) {
+      if (typeof text !== 'string') return text;
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
     function addLine(text, className = '') {
       const line = document.createElement('div');
       line.className = `terminal-line ${className}`;
@@ -1333,7 +1341,7 @@
       setBearState('searching');
 
       addLine(`──────────────────────────────────────`);
-      addLine(`SEARCHING FOR: "${query.toUpperCase()}"`, 'system');
+      addLine(`SEARCHING FOR: "${escapeHtml(query.toUpperCase())}"`, 'system');
 
       await sleep(1500);
       addLine(`SEARCHING.`);
@@ -1394,8 +1402,8 @@
       speak("This is your guy!");
 
       addLine(`<div class="result">
-        TARGET: ${query.toUpperCase()}<br>
-        LOCATION: ${location}<br>
+        TARGET: ${escapeHtml(query.toUpperCase())}<br>
+        LOCATION: ${escapeHtml(location)}<br>
         STATUS: POSITIVE IDENTIFICATION<br>
         CONFIDENCE: ${confidence}%
       </div>`, 'highlight');
