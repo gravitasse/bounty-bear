@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { initAudio, playChaChing, speakLine } from '@/lib/audio'
 
 type Clue = { text: string; unlock_distance: number | null }
 type Bounty = {
@@ -41,7 +42,8 @@ export default function BountyDetail({
     setError('')
 
     // Cinematic progress sequence
-    const steps = [
+    initAudio()
+    const steps: [number, string][] = [
       [10, "I'm the bear — the bounty bear!"],
       [30, 'I can find them anywhere!'],
       [55, "I'm searching..."],
@@ -49,9 +51,10 @@ export default function BountyDetail({
       [90, 'Verifying passcode...'],
     ]
     for (const [pct, msg] of steps) {
-      setProgress(pct as number)
-      setStatusMsg(msg as string)
-      await new Promise(r => setTimeout(r, 400))
+      setProgress(pct)
+      setStatusMsg(msg)
+      speakLine(msg)
+      await new Promise(r => setTimeout(r, 700))
     }
 
     // Verify passcode (case-insensitive)
@@ -107,6 +110,11 @@ export default function BountyDetail({
       })
     }
 
+    setProgress(100)
+    setStatusMsg('I GOT HIM!')
+    speakLine('I got him! This is your guy! Finders fee: one hundred thousand dollars!')
+    await new Promise(r => setTimeout(r, 400))
+    playChaChing()
     setClaimed(true)
     setLoading(false)
     onClaimed(bounty.reward_points)
