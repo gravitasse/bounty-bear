@@ -5,7 +5,7 @@ import "./globals.css";
 const vt323 = VT323({
   weight: "400",
   subsets: ["latin"],
-  variable: "--font-vt323",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -19,8 +19,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${vt323.variable} h-full`}>
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="en" className="h-full">
+      <body className={`${vt323.className} min-h-full flex flex-col`}>
+        {children}
+      </body>
     </html>
   );
 }
