@@ -2,6 +2,32 @@
 
 All notable changes to the Bounty Bear project will be documented in this file.
 
+## [1.991.1] - 2026-03-27
+
+### Added - OpenClaw Client Mobile Optimizations
+
+- **Complete Mobile Parity**: OpenClaw client now has all mobile optimizations from main bounty-bear.html
+- **Target Card Component**: Added condensed "Positive ID" card that appears on mobile when target is found
+- **Mobile State Management**: Implemented `.searching-active`, `.target-found`, `.mobile-compact` states
+- **Pulsing Ready Animation**: Bear icon now pulses with green/amber glow when ready for new search
+- **Bear Click Reset**: Mobile users can tap bear icon to reset layout and start new search
+- **Baseline Alignment**: Search prompt and input text now align on same baseline for clean typography
+
+### Changed - OpenClaw Client
+
+- **Condensed Result Card**: Bear shrinks to 64px in target-found state, reclaiming ~80px for terminal
+- **Consistent Padding**: All terminal sections use 16px horizontal padding for alignment
+- **Outline over Border**: Bear container uses `outline` to prevent pulse glow clipping
+- **Mobile Terminal Sizing**: Optimized font sizes and spacing for maximum readability
+
+### Technical Details
+
+- OpenClaw client (`openclaw/bounty-bear-client.html`) updated to match main file mobile UX
+- Desktop version completely untouched - all changes in `@media (max-width: 1024px)` blocks
+- SSE streaming integration preserved and enhanced with mobile state callbacks
+
+---
+
 ## [1.991.0] - 2026-03-27
 
 ### Added

@@ -104,17 +104,193 @@
       overflow: hidden;
     }
 
+    /* Mobile-only INFO toggle button */
+    .mobile-info-btn {
+      display: none;
+    }
+
     @media (max-width: 1024px) {
-      main {
-        grid-template-columns: 1fr;
-        grid-template-rows: 1fr;
+      header {
+        padding: 2px 8px;
+        border-bottom: 1px solid var(--green);
       }
-      .sidebar, .info-panel {
+      .logo {
+        font-size: 0.6rem;
+        gap: 6px;
+      }
+      .logo-bear {
         display: none;
       }
-      .terminal {
-        height: 100%;
+      .system-status {
+        font-size: 0.95rem;
       }
+      main {
+        display: flex;
+        flex-direction: column;
+        overflow: visible;
+        position: relative;
+        max-height: calc(100vh - 20px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .info-panel {
+        display: none;
+      }
+      .sidebar {
+        flex: 0 0 auto;
+        display: grid !important;
+        grid-template-columns: 100% !important;
+        gap: 16px !important;
+        padding: 20px 16px !important;
+        order: -1;
+        width: 100% !important;
+        box-sizing: border-box;
+        background: rgba(0, 0, 0, 0.4) !important;
+        border: 1px solid var(--green) !important;
+        border-right: none !important;
+        border-radius: 8px !important;
+        margin: 0 0 16px 0 !important;
+        align-items: center !important;
+        justify-items: center !important;
+        text-align: center !important;
+      }
+      .sidebar > .stats-box, .sidebar > .target-card {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+      }
+      .bear-container {
+        width: 100px !important;
+        height: 100px !important;
+        font-size: 60px !important;
+        border-width: 3px !important;
+        margin: 10px auto 24px auto !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        flex-shrink: 0 !important;
+        justify-self: center !important;
+      }
+      .bear-status {
+        width: 100% !important;
+        font-size: 0.8rem;
+        letter-spacing: 0;
+        white-space: nowrap;
+        transition: font-size 0.3s;
+        text-align: center !important;
+      }
+      .target-found .bear-status { font-size: 1.1rem !important; margin-bottom: 2px !important; }
+      .stats-box {
+        flex: 1;
+        padding: 2px 6px;
+        font-size: 0.95rem;
+        border: 1px solid var(--border);
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.3s;
+      }
+      .stat-row {
+        flex: 1 !important;
+        padding: 0;
+        border-bottom: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        align-items: center;
+        text-align: center;
+        font-size: 1.1rem;
+        transition: font-size 0.3s;
+      }
+      .stat-value {
+        font-size: 1.35rem;
+        font-weight: bold;
+        transition: font-size 0.3s;
+      }
+
+      /* State-Dependent Scale Overrides */
+      .searching-active .bear-container {
+        width: 100px !important;
+        height: 100px !important;
+        font-size: 60px !important;
+        border-width: 3px !important;
+      }
+      .searching-active .bear-status {
+        font-size: 1.6rem !important;
+        letter-spacing: 4px;
+        text-align: center;
+      }
+      .searching-active .stats-box, .searching-active .target-card {
+        display: none !important;
+      }
+
+      .target-found .bear-container {
+        width: 64px !important;
+        height: 64px !important;
+        font-size: 36px !important;
+        border-width: 2px !important;
+      }
+      .target-found .target-card {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: rgba(0, 255, 65, 0.15) !important;
+        border: 2px solid var(--green) !important;
+        padding: 8px 12px !important;
+        border-radius: 6px !important;
+        text-align: center !important;
+        margin: 0 auto !important;
+        animation: slideIn 0.3s forwards;
+        width: 100% !important;
+        gap: 2px !important;
+      }
+      .target-found .target-label { text-align: center !important; width: 100%; display: block; margin-bottom: 0 !important; font-weight: bold; opacity: 0.8; font-size: 0.95rem !important; }
+      .target-card .target-name { font-size: 1.4rem !important; font-weight: bold; color: var(--green); text-align: center !important; width: 100%; display: block; margin: 0 !important; line-height: 1.2 !important; }
+      .target-card .target-location { font-size: 1rem !important; color: var(--text); text-align: center !important; width: 100%; display: block; margin: 0 !important; line-height: 1.2 !important; }
+
+      .stats-box {
+        display: none !important;
+        flex-direction: row !important;
+        justify-content: space-around !important;
+        width: 100% !important;
+        padding: 8px 0 !important;
+        border-top: 1px solid var(--green-dim) !important;
+        background: none !important;
+      }
+      .target-found .sidebar { gap: 8px !important; padding: 10px 16px !important; }
+      .mobile-compact .sidebar { gap: 12px !important; padding: 12px 16px !important; }
+      .mobile-compact .stats-box, .target-found .stats-box { display: flex !important; }
+
+      .mobile-compact .bear-container {
+        width: 48px !important;
+        height: 48px !important;
+        font-size: 26px !important;
+        border-width: 2px !important;
+      }
+      .mobile-compact .bear-status { font-size: 1.1rem; text-align: center; }
+      .mobile-compact .target-card { display: block !important; }
+      .terminal {
+        flex: 1;
+        height: auto;
+        min-height: 0;
+      }
+      .terminal-output {
+        padding: 12px 16px;
+        font-size: 1.15rem;
+        line-height: 1.6;
+      }
+      .terminal-input-area {
+        padding: 10px 16px;
+        gap: 8px;
+      }
+    }
+
+    .target-card { display: none; }
+    @keyframes slideIn {
+      from { transform: translateY(-10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
 
     /* Sidebar - Bear Avatar */
@@ -127,13 +303,15 @@
       gap: 24px;
       background: var(--terminal-bg);
       overflow-y: auto;
+      overflow-x: visible;
       min-height: 0;
     }
 
     .bear-container {
       width: 180px;
       height: 180px;
-      border: 3px solid var(--green);
+      outline: 2px solid var(--green);
+      outline-offset: -2px;
       border-radius: 12px;
       display: flex;
       align-items: center;
@@ -142,16 +320,17 @@
       background: rgba(0, 255, 65, 0.05);
       position: relative;
       transition: all 0.3s;
+      transform: translateZ(0);
     }
 
     .bear-container.searching {
       animation: pulse 0.8s ease-in-out infinite;
-      border-color: var(--amber);
+      outline-color: var(--amber);
       box-shadow: 0 0 30px rgba(255, 176, 0, 0.3);
     }
 
     .bear-container.found {
-      border-color: var(--green);
+      outline-color: var(--green);
       box-shadow: 0 0 30px var(--green-dim);
       animation: none;
     }
@@ -159,6 +338,27 @@
     @keyframes pulse {
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.05); }
+    }
+
+    @keyframes pulse-ready {
+      0%, 100% {
+        box-shadow: 0 0 10px var(--green);
+        outline-color: var(--green);
+        outline-width: 2px;
+        transform: scale(1) translateZ(0);
+      }
+      50% {
+        box-shadow: 0 0 35px 10px var(--green-dim);
+        outline-color: var(--amber);
+        outline-width: 5px;
+        transform: scale(1.1) translateZ(0);
+      }
+    }
+
+    .bear-container.ready {
+      animation: pulse-ready 1.5s infinite ease-in-out;
+      cursor: pointer;
+      z-index: 1000;
     }
 
     .bear-status {
@@ -269,6 +469,7 @@
       padding: 16px 24px;
       border-top: 2px solid var(--green);
       display: flex;
+      align-items: baseline;
       gap: 12px;
       background: rgba(0, 0, 0, 0.3);
       position: relative;
@@ -579,6 +780,11 @@
           <span class="stat-value" id="bountyTotal">$0</span>
         </div>
       </div>
+      <div class="target-card" id="targetCard">
+        <div class="target-label">POSITIVE ID:</div>
+        <div class="target-name" id="lastTargetName">---</div>
+        <div class="target-location" id="lastTargetLocation">---</div>
+      </div>
     </aside>
 
     <section class="terminal">
@@ -876,15 +1082,25 @@
       if (e.key === 'Escape') settingsModal.classList.remove('visible');
     });
 
+    // Mobile state management
+    const mainArea = document.querySelector('main');
+    const isMobile = () => window.innerWidth <= 1024px;
+
     function performSearch(query) {
       synth.cancel(); // Clear pending speech when starting new search
-      
+
+      // Mobile state: enter searching mode
+      if (isMobile()) {
+        mainArea.classList.remove('mobile-compact', 'target-found');
+        mainArea.classList.add('searching-active');
+      }
+
       const imAudio = document.getElementById('imSearchingAudio');
       if (imAudio && voiceEnabled) {
         imAudio.currentTime = 0;
         imAudio.play().catch(console.error);
       }
-      
+
       searchInput.disabled = true;
       searchCount++;
       searchCountEl.textContent = searchCount;
@@ -925,8 +1141,20 @@
           if (clawData.type === 'final_response') {
             const allBars = output.querySelectorAll('.progress-fill');
             if (allBars.length > 0) allBars[allBars.length - 1].style.width = '100%';
-            
+
             setBearState('found');
+
+            // Mobile: transition to target-found state
+            if (isMobile()) {
+              mainArea.classList.remove('searching-active');
+              mainArea.classList.add('target-found');
+              // Extract location from content if available
+              const locationMatch = clawData.content?.match(/location[:\s]+([^,\n]+)/i);
+              const location = locationMatch ? locationMatch[1].trim().toUpperCase() : 'UNKNOWN';
+              document.getElementById('lastTargetName').textContent = query.toUpperCase();
+              document.getElementById('lastTargetLocation').textContent = location;
+            }
+
             addLine(`I GOT HIM!`, 'success');
             speak("I got him!");
 
@@ -944,18 +1172,26 @@
                 STATUS: POSITIVE IDENTIFICATION<br>
                 CONFIDENCE: ${confidence}%
               </div>`, 'highlight');
-              
+
               foundCount++;
               foundCountEl.textContent = foundCount;
               bountyTotal += 500000;
               bountyTotalEl.textContent = '$' + bountyTotal.toLocaleString();
             }, 3000);
 
+            // Transition to mobile-compact after 7 seconds
+            setTimeout(() => {
+              if (isMobile()) {
+                mainArea.classList.remove('searching-active', 'target-found');
+                mainArea.classList.add('mobile-compact');
+              }
+            }, 7000);
+
             // 8-second cinematic pause before the big payout
             setTimeout(() => {
               addLine(`FINDERS FEE: <span class="money">$500,000</span>`, 'success');
               speak("Finders fee: Five hundred thousand dollars!");
-            }, 11000); 
+            }, 11000);
 
             // Final wrap up
             setTimeout(() => {
@@ -966,7 +1202,7 @@
               searchInput.value = '';
               searchInput.focus();
             }, 14000);
-            
+
             stream.close();
           }
           
@@ -994,6 +1230,25 @@
         stream.close();
       };
     }
+
+    // Mobile: bear click to reset layout
+    bearContainer.addEventListener('click', () => {
+      if (bearContainer.classList.contains('searching')) return;
+
+      searchInput.value = '';
+      searchInput.disabled = false;
+
+      if (isMobile()) {
+        mainArea.classList.remove('mobile-compact', 'searching-active', 'target-found');
+        document.getElementById('lastTargetName').textContent = '---';
+        document.getElementById('lastTargetLocation').textContent = '---';
+        searchInput.blur();
+      }
+
+      setBearState('ready');
+      addLine('──────────────────────────────────────');
+      addLine('SYSTEM RESET. ENTER A NAME TO BEGIN SEARCH...', 'system');
+    });
 
     searchInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter' && searchInput.value.trim()) {
