@@ -67,7 +67,7 @@ export default function CreateBountyModal({ userId, onClose }: { userId: string;
       difficulty,
       clues,
       verification_method: 'passcode',
-      verification_data: { passcode_hash: passcode, hint: clues[2].text },
+      verification_data: { passcode_hash: passcode, hint: clues[2].text, lat: coords.lat, lng: coords.lng },
     })
 
     setLoading(false)

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 type Clue = { text: string; unlock_distance: number | null }
 type Bounty = {
@@ -10,7 +10,27 @@ type Bounty = {
   difficulty: number
   clues: Clue[]
   creator_id: string
-  verification_data: { passcode_hash: string; hint: string }
+  expires_at?: string
+  verification_data: { passcode_hash: string; hint: string; lat?: number; lng?: number }
+}
+
+function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number) {
+  const R = 6371000
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLng = (lng2 - lng1) * Math.PI / 180
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
+function timeRemaining(expiresAt: string) {
+  const ms = new Date(expiresAt).getTime() - Date.now()
+  if (ms <= 0) return 'EXPIRED'
+  const h = Math.floor(ms / 3600000)
+  const m = Math.floor((ms % 3600000) / 60000)
+  if (h > 24) return `${Math.floor(h / 24)}d ${h % 24}h`
+  if (h > 0) return `${h}h ${m}m`
+  return `${m}m`
 }
 
 export default function BountyDetail({
@@ -29,7 +49,32 @@ export default function BountyDetail({
   claimRunning: boolean
 }) {
   const [passcode, setPasscode] = useState('')
+  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null)
   const isOwn = bounty.creator_id === userId
+  const bountyCoords = bounty.verification_data?.lat != null
+    ? { lat: bounty.verification_data.lat!, lng: bounty.verification_data.lng! }
+    : null
+
+  // GPS polling for proximity unlocking
+  useEffect(() => {
+    if (!bountyCoords) return
+    const watchId = navigator.geolocation.watchPosition(
+      pos => setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => {},
+      { enableHighAccuracy: true, maximumAge: 5000 }
+    )
+    return () => navigator.geolocation.clearWatch(watchId)
+  }, [bounty.id])
+
+  const distanceToTarget = userCoords && bountyCoords
+    ? haversineMeters(userCoords.lat, userCoords.lng, bountyCoords.lat, bountyCoords.lng)
+    : null
+
+  function isClueUnlocked(clue: Clue) {
+    if (!clue.unlock_distance) return true
+    if (!distanceToTarget) return false
+    return distanceToTarget <= clue.unlock_distance
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -37,21 +82,29 @@ export default function BountyDetail({
     onClaimSubmit(passcode.trim().toUpperCase())
   }
 
+  const inputStyle: React.CSSProperties = {
+    background: 'transparent',
+    border: '1px solid var(--green)',
+    color: 'var(--green)',
+    fontFamily: 'var(--font-vt323), VT323, monospace',
+    fontSize: '1.4rem',
+    padding: '8px 12px',
+    textTransform: 'uppercase',
+    letterSpacing: 2,
+    outline: 'none',
+    width: '100%',
+  }
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Title row */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {/* Title */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div className="info-title" style={{ margin: 0 }}>ACTIVE BOUNTY</div>
-        <button
-          onClick={onClose}
-          style={{ background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', fontSize: '1.2rem' }}
-        >
-          ✕
-        </button>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', fontSize: '1.2rem' }}>✕</button>
       </div>
 
       {/* Bounty info */}
-      <div style={{ border: '1px solid var(--border)', padding: 12, marginBottom: 16 }}>
+      <div style={{ border: '1px solid var(--border)', padding: 12 }}>
         <div style={{ color: 'var(--green)', fontSize: '1.4rem', fontWeight: 'bold' }}>
           {bounty.location_name.toUpperCase()}
         </div>
@@ -63,19 +116,62 @@ export default function BountyDetail({
             {bounty.reward_points.toLocaleString()} PTS
           </span>
         </div>
+        {bounty.expires_at && (
+          <div style={{ color: 'var(--border)', fontSize: '1rem', marginTop: 4 }}>
+            EXPIRES: <span style={{ color: timeRemaining(bounty.expires_at) === 'EXPIRED' ? 'var(--red)' : 'var(--amber)' }}>
+              {timeRemaining(bounty.expires_at)}
+            </span>
+          </div>
+        )}
       </div>
 
+      {/* Distance indicator */}
+      {bountyCoords && (
+        <div style={{
+          border: `1px solid ${distanceToTarget == null ? 'var(--border)' : distanceToTarget < 100 ? 'var(--green)' : 'var(--amber)'}`,
+          padding: '8px 12px',
+          fontSize: '1.1rem',
+          color: distanceToTarget == null ? 'var(--border)' : distanceToTarget < 100 ? 'var(--green)' : 'var(--amber)',
+        }}>
+          {distanceToTarget == null
+            ? '📍 ACQUIRING GPS...'
+            : distanceToTarget < 1000
+            ? `📍 ${Math.round(distanceToTarget)}M FROM TARGET`
+            : `📍 ${(distanceToTarget / 1000).toFixed(1)}KM FROM TARGET`}
+        </div>
+      )}
+
       {/* Clues */}
-      <div style={{ marginBottom: 16 }}>
+      <div>
         <div className="info-title">CLUES</div>
-        {bounty.clues.map((clue, i) => (
-          <div key={i} style={{ border: '1px solid var(--border)', padding: '8px 12px', marginBottom: 8 }}>
-            <div style={{ color: 'var(--border)', fontSize: '1rem', marginBottom: 4 }}>
-              {clue.unlock_distance ? `UNLOCKS AT ${clue.unlock_distance}M` : 'VISIBLE NOW'}
+        {bounty.clues.map((clue, i) => {
+          const unlocked = isClueUnlocked(clue)
+          const dist = clue.unlock_distance
+          return (
+            <div key={i} style={{
+              border: `1px solid ${unlocked ? 'var(--border)' : 'rgba(0,0,0,0.3)'}`,
+              padding: '8px 12px',
+              marginBottom: 8,
+              opacity: unlocked ? 1 : 0.5,
+            }}>
+              <div style={{ color: 'var(--border)', fontSize: '0.95rem', marginBottom: 4 }}>
+                CLUE {i + 1} — {dist ? `UNLOCKS AT ${dist}M` : 'VISIBLE NOW'}
+              </div>
+              {unlocked ? (
+                <div style={{ color: 'var(--text)' }}>{clue.text}</div>
+              ) : (
+                <div style={{ color: 'var(--border)' }}>
+                  🔒 GET WITHIN {dist}M TO UNLOCK
+                  {distanceToTarget != null && (
+                    <span style={{ color: 'var(--amber)', marginLeft: 8 }}>
+                      ({Math.round(distanceToTarget - dist!)}M TO GO)
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
-            <div style={{ color: 'var(--text)' }}>{clue.text}</div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {/* Claim */}
@@ -97,18 +193,7 @@ export default function BountyDetail({
             placeholder="PASSCODE"
             autoComplete="off"
             disabled={claimRunning}
-            style={{
-              background: 'transparent',
-              border: '1px solid var(--green)',
-              color: 'var(--green)',
-              fontFamily: 'var(--font-vt323), VT323, monospace',
-              fontSize: '1.4rem',
-              padding: '8px 12px',
-              textTransform: 'uppercase',
-              letterSpacing: 2,
-              outline: 'none',
-              width: '100%',
-            }}
+            style={inputStyle}
           />
           <button
             type="submit"

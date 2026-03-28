@@ -2,9 +2,13 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { initAudio, playChaChing, speakQueued, playImSearchingMp3 } from '@/lib/audio'
+import { initAudio, playChaChing, speakQueued, playImSearchingMp3, playBlip } from '@/lib/audio'
 import CreateBountyModal from './CreateBountyModal'
 import BountyDetail from './BountyDetail'
+import LeaderboardModal from './LeaderboardModal'
+import dynamic from 'next/dynamic'
+
+const MapModal = dynamic(() => import('./MapModal'), { ssr: false })
 
 type Bounty = {
   id: string
@@ -12,9 +16,11 @@ type Bounty = {
   reward_points: number
   difficulty: number
   created_at: string
+  expires_at: string
+  status?: string
   creator_id: string
   clues: { text: string; unlock_distance: number | null }[]
-  verification_data: { passcode_hash: string; hint: string }
+  verification_data: { passcode_hash: string; hint: string; lat?: number; lng?: number }
 }
 
 type User = {
@@ -41,13 +47,26 @@ function useDateTime() {
   return dt
 }
 
+function timeLeft(expiresAt: string) {
+  const ms = new Date(expiresAt).getTime() - Date.now()
+  if (ms <= 0) return null
+  const h = Math.floor(ms / 3600000)
+  if (h > 48) return null // don't clutter list with far-future expiry
+  const m = Math.floor((ms % 3600000) / 60000)
+  if (h > 0) return `${h}h`
+  return `${m}m`
+}
+
 const diffStars = (d: number) => '★'.repeat(d) + '☆'.repeat(Math.max(0, 5 - d))
 
 export default function BountyBoard({ user, bounties: initialBounties }: { user: User; bounties: Bounty[] }) {
   const supabase = createClient()
   const [showCreate, setShowCreate] = useState(false)
+  const [showLeaderboard, setShowLeaderboard] = useState(false)
+  const [showMap, setShowMap] = useState(false)
   const [selectedBounty, setSelectedBounty] = useState<Bounty | null>(null)
   const [bounties, setBounties] = useState(initialBounties)
+  const [newBountyIds, setNewBountyIds] = useState<Set<string>>(new Set())
   const [points, setPoints] = useState(user.points)
   const [claimed, setClaimed] = useState(0)
   const [infoOpen, setInfoOpen] = useState(false)
@@ -64,26 +83,64 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
   const outputRef = useRef<HTMLDivElement>(null)
   const datetime = useDateTime()
 
-  function addLine(text: string, type: TerminalLine['type'] = 'normal') {
-    setTerminalLines(prev => [...prev, { text, type }])
-  }
-
+  // Auto-scroll terminal
   useEffect(() => {
-    if (outputRef.current) {
-      outputRef.current.scrollTop = outputRef.current.scrollHeight
-    }
+    if (outputRef.current) outputRef.current.scrollTop = outputRef.current.scrollHeight
   }, [terminalLines])
 
-  // Open info panel when a bounty is selected (mobile)
+  // Open info panel when bounty selected
   useEffect(() => {
     if (selectedBounty) setInfoOpen(true)
     else if (claimState === 'idle') setInfoOpen(false)
   }, [selectedBounty])
 
+  // Supabase Realtime — live bounty updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('bounties-live')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'bounties' },
+        (payload) => {
+          const b = payload.new as Bounty
+          if (b.creator_id === user.id) return // we just posted it, page reload handles it
+          setBounties(prev => {
+            if (prev.find(x => x.id === b.id)) return prev
+            setNewBountyIds(ids => new Set([...ids, b.id]))
+            setTimeout(() => setNewBountyIds(ids => { const n = new Set(ids); n.delete(b.id); return n }), 1500)
+            return [b, ...prev]
+          })
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'bounties' },
+        (payload) => {
+          const b = payload.new as Bounty
+          if (b.status !== 'active') {
+            setBounties(prev => prev.filter(x => x.id !== b.id))
+            if (selectedBounty?.id === b.id) setSelectedBounty(null)
+          }
+        }
+      )
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [user.id])
+
+  function addLine(text: string, type: TerminalLine['type'] = 'normal') {
+    setTerminalLines(prev => [...prev, { text, type }])
+  }
+
+  function selectBounty(b: Bounty) {
+    initAudio()
+    playBlip()
+    setSelectedBounty(b)
+  }
+
   async function handleClaim(passcode: string) {
     if (!selectedBounty) return
 
-    // Verify passcode before starting the show
     if (passcode !== selectedBounty.verification_data.passcode_hash.toUpperCase()) {
       setClaimError('Wrong passcode. Keep hunting.')
       return
@@ -279,17 +336,14 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
           <div className="terminal-output" ref={outputRef}>
             {showingSequence ? (
               <>
-                {/* Progress bar */}
                 <div className="progress-bar">
                   <div className="progress-fill" style={{ width: `${progress}%` }} />
                 </div>
-
                 {terminalLines.map((line, i) => (
                   <div key={i} className={`terminal-line ${line.type}`} style={{ whiteSpace: 'pre-line' }}>
                     {line.text}
                   </div>
                 ))}
-
                 {claimState === 'done' && (
                   <div style={{ marginTop: 24 }}>
                     <div style={{ color: 'var(--green)', fontSize: '2rem', fontWeight: 'bold', marginBottom: 12 }}>
@@ -318,18 +372,34 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
                       {bounties.length} ACTIVE {bounties.length === 1 ? 'BOUNTY' : 'BOUNTIES'} AVAILABLE:
                     </div>
                     <div className="terminal-line">──────────────────────────────────────</div>
-                    {bounties.map((b, i) => (
-                      <div
-                        key={b.id}
-                        className={`bounty-row terminal-line${selectedBounty?.id === b.id ? ' selected' : ''}`}
-                        style={{ animationDelay: `${i * 0.05}s` }}
-                        onClick={() => setSelectedBounty(b)}
-                      >
-                        <span className="bounty-name">► {b.location_name.toUpperCase()}</span>
-                        <span className="bounty-diff">{diffStars(b.difficulty)}</span>
-                        <span className="bounty-pts">{b.reward_points.toLocaleString()} PTS</span>
-                      </div>
-                    ))}
+                    {bounties.map((b, i) => {
+                      const expiry = b.expires_at ? timeLeft(b.expires_at) : null
+                      const isNew = newBountyIds.has(b.id)
+                      return (
+                        <div
+                          key={b.id}
+                          className={`bounty-row terminal-line${selectedBounty?.id === b.id ? ' selected' : ''}${isNew ? ' new-bounty' : ''}`}
+                          style={{ flexDirection: 'column', alignItems: 'flex-start', animationDelay: `${i * 0.04}s` }}
+                          onClick={() => selectBounty(b)}
+                        >
+                          <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
+                            <span className="bounty-name">► {b.location_name.toUpperCase()}</span>
+                            <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', flexShrink: 0 }}>
+                              {expiry && (
+                                <span style={{ color: 'var(--red)', fontSize: '0.95rem' }}>⏱{expiry}</span>
+                              )}
+                              <span className="bounty-diff">{diffStars(b.difficulty)}</span>
+                              <span className="bounty-pts">{b.reward_points.toLocaleString()} PTS</span>
+                            </div>
+                          </div>
+                          {b.clues?.[0]?.text && (
+                            <div className="bounty-clue" style={{ marginTop: 2, paddingLeft: 16 }}>
+                              {b.clues[0].text}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
                   </>
                 )}
               </>
@@ -341,8 +411,11 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
               <button className="action-btn primary" onClick={() => setShowCreate(true)}>
                 ► POST BOUNTY
               </button>
-              <button className="action-btn" disabled style={{ opacity: 0.4, cursor: 'not-allowed' }}>
+              <button className="action-btn" onClick={() => setShowLeaderboard(true)}>
                 🏆 LEADERBOARD
+              </button>
+              <button className="action-btn" onClick={() => setShowMap(true)}>
+                🗺️ MAP
               </button>
             </div>
           )}
@@ -351,7 +424,7 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
         {/* ── Info Panel ── */}
         <aside className={`info-panel${infoOpen ? ' mobile-open' : ''}`}>
           {selectedBounty && claimState !== 'done' ? (
-            <div style={{ padding: 0, height: '100%' }}>
+            <div style={{ height: '100%', overflowY: 'auto' }}>
               <button
                 className="mobile-close-info"
                 style={{ display: infoOpen ? 'block' : 'none' }}
@@ -419,7 +492,6 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
               </div>
             </>
           ) : (
-            // During sequence: show the target name in info panel
             <div style={{ padding: 24 }}>
               <div className="info-title">TARGET LOCKED</div>
               <div style={{ color: 'var(--green)', fontSize: '1.6rem', fontWeight: 'bold', marginTop: 16 }}>
@@ -437,6 +509,16 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
         <CreateBountyModal
           userId={user.id}
           onClose={() => { setShowCreate(false); window.location.reload() }}
+        />
+      )}
+
+      {showLeaderboard && <LeaderboardModal onClose={() => setShowLeaderboard(false)} />}
+
+      {showMap && (
+        <MapModal
+          bounties={bounties}
+          onClose={() => setShowMap(false)}
+          onSelect={(b) => { setShowMap(false); selectBounty(b) }}
         />
       )}
     </>

@@ -80,6 +80,19 @@ export function speakQueued(text: string) {
   synth.speak(utt)
 }
 
+export function playBlip() {
+  if (!audioCtx) return
+  const osc = audioCtx.createOscillator()
+  const gain = audioCtx.createGain()
+  osc.frequency.setValueAtTime(660, audioCtx.currentTime)
+  gain.gain.setValueAtTime(0.05, audioCtx.currentTime)
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08)
+  osc.connect(gain)
+  gain.connect(audioCtx.destination)
+  osc.start()
+  osc.stop(audioCtx.currentTime + 0.08)
+}
+
 export function playImSearchingMp3() {
   if (typeof window === 'undefined') return
   const audio = new Audio('/demo/audio/im-searching.mp3')

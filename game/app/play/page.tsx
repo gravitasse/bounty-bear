@@ -30,7 +30,7 @@ export default async function PlayPage() {
 
   const { data: bounties } = await supabase
     .from('bounties')
-    .select('id, location_name, reward_points, difficulty, created_at, creator_id, clues, verification_data')
+    .select('id, location_name, reward_points, difficulty, created_at, expires_at, creator_id, clues, verification_data')
     .eq('status', 'active')
     .order('created_at', { ascending: false })
     .limit(50)
