@@ -253,11 +253,45 @@
       .searching-active .bear-status {
         font-size: 1.4rem;
       }
-      .searching-active .stats-box {
-        display: none; /* Hide stats to give bear more room */
-      }
-      .searching-active .mobile-info-btn {
+      .searching-active .stats-box, .searching-active .mobile-info-btn {
         display: none;
+      }
+
+      /* Target Found State (Bear + Result BIG) */
+      .target-found .sidebar {
+        flex-direction: column;
+        padding: 12px 8px;
+        gap: 8px;
+      }
+      .target-found .bear-container {
+        width: 64px;
+        height: 64px;
+        font-size: 36px;
+      }
+      .target-found .target-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        background: var(--green-dim);
+        border: 1px solid var(--green);
+        padding: 8px;
+        border-radius: 4px;
+        animation: slideIn 0.3s forwards;
+      }
+      .target-card .target-label {
+        font-size: 0.6rem;
+        color: var(--amber);
+        margin-bottom: 2px;
+      }
+      .target-card .target-name {
+        font-size: 1.4rem;
+        font-weight: bold;
+        color: var(--green);
+      }
+      .target-card .target-location {
+        font-size: 0.9rem;
+        color: var(--text);
       }
 
       /* Found / Compact State (Bear SMALL) */
@@ -273,6 +307,19 @@
       .mobile-compact .bear-status {
         font-size: 0.65rem;
       }
+      .mobile-compact .target-card {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        font-size: 0.75rem;
+        background: none;
+        border: none;
+        padding: 0;
+      }
+      .mobile-compact .target-label { display: none; }
+      .mobile-compact .target-name { font-size: 0.8rem; color: var(--amber); }
+      .mobile-compact .target-location { font-size: 0.7rem; opacity: 0.7; }
+
       .mobile-compact .stats-box {
         padding: 1px 4px;
         gap: 2px;
@@ -292,6 +339,12 @@
         height: auto;
         min-height: 0;
       }
+    }
+    
+    .target-card { display: none; }
+    @keyframes slideIn {
+      from { transform: translateY(-10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
 
     /* Sidebar - Bear Avatar */
@@ -772,7 +825,12 @@
           <span>BOUNTIES</span>
           <span class="stat-value" id="bountyTotal">$0</span>
         </div>
+      <div class="target-card" id="targetCard">
+        <div class="target-label">POSITIVE ID:</div>
+        <div class="target-name" id="lastTargetName">---</div>
+        <div class="target-location" id="lastTargetLocation">---</div>
       </div>
+
       <button class="mobile-info-btn" id="mobileInfoBtn" title="Toggle info panel">📋 INFO</button>
     </aside>
 
@@ -1122,8 +1180,9 @@
       forceCompact = false;
       
       if (isMobile()) {
-        mainArea.classList.remove('mobile-compact');
-        mainArea.classList.remove('searching-active');
+        mainArea.classList.remove('mobile-compact', 'searching-active', 'target-found');
+        document.getElementById('lastTargetName').textContent = '---';
+        document.getElementById('lastTargetLocation').textContent = '---';
         searchInput.blur();
       }
       
@@ -1168,6 +1227,16 @@
         mainArea.classList.remove('mobile-compact');
         mainArea.classList.add('searching-active');
       }
+      
+      const locations = [
+        'BERLIN', 'TOKYO', 'PARIS', 'NEW YORK', 'SYDNEY', 'LONDON',
+        'HONG KONG', 'MOSCOW', 'DUBAI', 'SAO PAULO', 'SINGAPORE', 'MUMBAI',
+        'JOHANNESBURG', 'CAIRO', 'MEXICO CITY', 'BUENOS AIRES', 'SEOUL', 'BANGKOK',
+        'AMSTERDAM', 'TORONTO', 'LOS ANGELES', 'VIENNA', 'PRAGUE', 'ISTANBUL',
+        'NAIROBI', 'MANILA', 'JAKARTA', 'ROME', 'BARCELONA', 'MIAMI'
+      ];
+      const location = locations[Math.floor(Math.random() * locations.length)];
+      const confidence = (97 + Math.random() * 2.9).toFixed(1);
       
       synth.cancel(); // Clear pending speech when starting new search
       
@@ -1232,7 +1301,9 @@
 
       if (isMobile()) {
         mainArea.classList.remove('searching-active');
-        mainArea.classList.add('mobile-compact');
+        mainArea.classList.add('target-found');
+        document.getElementById('lastTargetName').textContent = query.toUpperCase();
+        document.getElementById('lastTargetLocation').textContent = location;
       }
 
       addLine(`I GOT HIM!`, 'success');
@@ -1241,18 +1312,6 @@
       await sleep(2500);
       addLine(`THIS IS YOUR GUY!`, 'success');
       speak("This is your guy!");
-
-      // Random location from around the world
-      const locations = [
-        'BERLIN', 'TOKYO', 'PARIS', 'NEW YORK', 'SYDNEY', 'LONDON',
-        'HONG KONG', 'MOSCOW', 'DUBAI', 'SAO PAULO', 'SINGAPORE', 'MUMBAI',
-        'JOHANNESBURG', 'CAIRO', 'MEXICO CITY', 'BUENOS AIRES', 'SEOUL', 'BANGKOK',
-        'AMSTERDAM', 'TORONTO', 'LOS ANGELES', 'VIENNA', 'PRAGUE', 'ISTANBUL',
-        'NAIROBI', 'MANILA', 'JAKARTA', 'ROME', 'BARCELONA', 'MIAMI'
-      ];
-      const location = locations[Math.floor(Math.random() * locations.length)];
-
-      const confidence = (97 + Math.random() * 2.9).toFixed(1);
 
       addLine(`<div class="result">
         TARGET: ${query.toUpperCase()}<br>
@@ -1268,7 +1327,13 @@
       bountyTotal += bounty;
       bountyTotalEl.textContent = '$' + bountyTotal.toLocaleString();
 
-      await sleep(8000);
+      await sleep(7000); // 7 seconds of prominence
+      
+      if (isMobile()) {
+        mainArea.classList.remove('searching-active', 'target-found');
+        mainArea.classList.add('mobile-compact');
+      }
+
       addLine(`FINDERS FEE: <span class="money">$500,000</span>`, 'success');
       speak("Finders fee: Five hundred thousand dollars!");
       playChaChing();
