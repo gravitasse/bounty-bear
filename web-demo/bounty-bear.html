@@ -125,11 +125,17 @@
         font-size: 0.65rem;
       }
       main {
+        --sidebar-scale: 1;
         grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr;
+        grid-template-rows: var(--sidebar-height, 46px) 1fr;
         overflow: hidden;
         position: relative;
         max-height: calc(100vh - 20px);
+        transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      main.mobile-compact {
+        --sidebar-height: 30px;
+        --sidebar-scale: 0.65;
       }
       .info-panel {
         display: none;
@@ -152,34 +158,39 @@
         align-items: center;
         border-right: none;
         border-bottom: 1px solid var(--green);
-        padding: 2px 8px;
-        gap: 4px;
-        overflow: visible;
+        padding: calc(2px * var(--sidebar-scale)) 8px;
+        gap: calc(4px * var(--sidebar-scale));
+        overflow: hidden;
         min-height: auto;
+        height: 100%;
+        transition: padding 0.3s, gap 0.3s, border-bottom 0.3s;
       }
       .bear-container {
-        width: 20px;
-        height: 20px;
-        font-size: 12px;
+        width: calc(20px * var(--sidebar-scale));
+        height: calc(20px * var(--sidebar-scale));
+        font-size: calc(12px * var(--sidebar-scale));
         border-width: 1px;
         border-radius: 3px;
         flex-shrink: 0;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
       .bear-status {
-        font-size: 0.65rem;
+        font-size: calc(0.65rem * var(--sidebar-scale));
         letter-spacing: 0;
         white-space: nowrap;
+        transition: font-size 0.3s;
       }
       .stats-box {
         flex: 1;
-        padding: 2px 4px;
-        font-size: 0.55rem;
+        padding: calc(1px * var(--sidebar-scale)) calc(4px * var(--sidebar-scale));
+        font-size: calc(0.55rem * var(--sidebar-scale));
         border: 1px solid var(--border);
         display: flex;
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
-        gap: 4px;
+        gap: calc(2px * var(--sidebar-scale));
+        transition: all 0.3s;
       }
       .stat-row {
         padding: 0;
@@ -189,6 +200,8 @@
         gap: 0;
         align-items: center;
         text-align: center;
+        font-size: calc(0.55rem * var(--sidebar-scale));
+        transition: font-size 0.3s;
       }
       .mobile-info-btn {
         display: block;
@@ -196,12 +209,12 @@
         border: 1px solid var(--amber);
         color: var(--amber);
         font-family: 'VT323', monospace;
-        font-size: 0.9rem;
-        padding: 4px 10px;
+        font-size: calc(0.9rem * var(--sidebar-scale));
+        padding: calc(4px * var(--sidebar-scale)) calc(10px * var(--sidebar-scale));
         cursor: pointer;
         border-radius: 4px;
         flex-shrink: 0;
-        transition: all 0.2s;
+        transition: all 0.3s;
       }
       .mobile-info-btn:hover { background: rgba(255, 176, 0, 0.15); }
       .mobile-info-btn.active {
@@ -241,6 +254,7 @@
       overflow-y: auto;
       min-height: 0;
     }
+    
 
     .bear-container {
       width: 180px;
@@ -1040,6 +1054,19 @@
 
     mobileInfoBtn.addEventListener('click', () => toggleInfoPanel());
     mobileCloseInfo.addEventListener('click', () => toggleInfoPanel(true));
+
+    // Mobile: auto-scale sidebar when user taps search input
+    const mainArea = document.querySelector('main');
+    const isMobile = () => window.innerWidth <= 1024;
+    
+    searchInput.addEventListener('focus', () => {
+      if (isMobile()) mainArea.classList.add('mobile-compact');
+    });
+    
+    searchInput.addEventListener('blur', () => {
+      // Small delay prevents jarring bounce if tapping around
+      setTimeout(() => { if (isMobile()) mainArea.classList.remove('mobile-compact'); }, 300);
+    });
 
     loadSession();
 
