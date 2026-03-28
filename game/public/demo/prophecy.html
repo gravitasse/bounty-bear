@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The 1991 Prophecy - AI Agents Predicted</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0c;
+      --surface: #111114;
+      --gold: #d4af37;
+      --gold-dim: rgba(212, 175, 55, 0.15);
+      --text: #e8e8e8;
+      --text-dim: #888;
+      --accent: #22d3ee;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    /* Hero Section */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 48px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background:
+        radial-gradient(ellipse at 50% 0%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(34, 211, 238, 0.05) 0%, transparent 40%);
+      pointer-events: none;
+    }
+
+    .year-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      padding: 8px 20px;
+      background: var(--gold-dim);
+      border: 1px solid var(--gold);
+      border-radius: 999px;
+      color: var(--gold);
+      letter-spacing: 0.15em;
+      margin-bottom: 32px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.5rem, 8vw, 5rem);
+      font-weight: 900;
+      line-height: 1.1;
+      max-width: 900px;
+      margin-bottom: 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero h1 span {
+      color: var(--gold);
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--text-dim);
+      max-width: 600px;
+      margin-bottom: 40px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .film-credit {
+      font-style: italic;
+      color: var(--text-dim);
+      font-size: 1rem;
+      margin-bottom: 48px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .film-credit a {
+      color: var(--gold);
+      text-decoration: none;
+    }
+
+    .film-credit a:hover {
+      text-decoration: underline;
+    }
+
+    /* Video embed */
+    .video-container {
+      width: 100%;
+      max-width: 800px;
+      aspect-ratio: 16/9;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 2px solid var(--gold);
+      box-shadow: 0 0 80px var(--gold-dim);
+      position: relative;
+      z-index: 1;
+      margin-bottom: 48px;
+    }
+
+    .video-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(8px); }
+    }
+
+    /* Comparison Section */
+    .comparison {
+      padding: 120px 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .comparison h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      text-align: center;
+      margin-bottom: 64px;
+    }
+
+    .comparison h2 span {
+      color: var(--accent);
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    @media (max-width: 768px) {
+      .timeline {
+        grid-template-columns: 1fr;
+        gap: 48px;
+      }
+      .timeline-line {
+        display: none;
+      }
+    }
+
+    .era {
+      padding: 32px;
+      background: var(--surface);
+      border-radius: 24px;
+      border: 1px solid #222;
+    }
+
+    .era-year {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .era-year.past {
+      color: var(--gold);
+    }
+
+    .era-year.now {
+      color: var(--accent);
+    }
+
+    .era h3 {
+      font-size: 1.5rem;
+      margin-bottom: 16px;
+    }
+
+    .era ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .era li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      color: var(--text-dim);
+    }
+
+    .era li::before {
+      content: '→';
+      color: var(--gold);
+      font-weight: bold;
+    }
+
+    .era.now li::before {
+      color: var(--accent);
+    }
+
+    .timeline-line {
+      width: 2px;
+      background: linear-gradient(to bottom, var(--gold), var(--accent));
+      min-height: 400px;
+      position: relative;
+    }
+
+    .timeline-line::before {
+      content: '35 YEARS';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-90deg);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      color: var(--text-dim);
+      white-space: nowrap;
+      background: var(--bg);
+      padding: 8px 16px;
+    }
+
+    /* The Point Section */
+    .the-point {
+      padding: 120px 24px;
+      background: var(--surface);
+      text-align: center;
+    }
+
+    .the-point h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      margin-bottom: 32px;
+    }
+
+    .the-point p {
+      font-size: 1.25rem;
+      max-width: 700px;
+      margin: 0 auto 24px;
+      color: var(--text-dim);
+    }
+
+    .the-point .highlight {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .meta-moment {
+      margin-top: 64px;
+      padding: 32px;
+      background: var(--bg);
+      border-radius: 16px;
+      border: 1px solid var(--accent);
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .meta-moment p {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      color: var(--accent);
+      margin-bottom: 0;
+    }
+
+    /* CTA */
+    .cta {
+      padding: 120px 24px;
+      text-align: center;
+    }
+
+    .cta h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      margin-bottom: 24px;
+    }
+
+    .cta-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--gold);
+      color: var(--bg);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px var(--gold-dim);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--text-dim);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Footer */
+    footer {
+      padding: 32px 24px;
+      text-align: center;
+      border-top: 1px solid #222;
+      color: var(--text-dim);
+      font-size: 0.875rem;
+    }
+
+    footer a {
+      color: var(--gold);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+  <section class="hero">
+    <div class="year-badge">NINETEEN NINETY-ONE</div>
+    <h1>A Film <span>Predicted</span> Your AI Assistant</h1>
+    <p>
+      35 years before ChatGPT, Claude, and autonomous agents—Wim Wenders showed
+      an AI searching databases, giving real-time feedback, and finding people.
+    </p>
+    <div class="film-credit">
+      From <a href="https://en.wikipedia.org/wiki/Until_the_End_of_the_World" target="_blank">"Until the End of the World"</a> (1991) — dir. Wim Wenders
+    </div>
+
+    <div class="video-container">
+      <iframe
+        src="https://www.youtube.com/embed/kKhzsx2gVgM?si=UliNaRjHDf8LuMFd"
+        title="Until the End of the World - AI Search Scene"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen>
+      </iframe>
+    </div>
+
+    <div class="scroll-hint">
+      <span>The prophecy fulfilled</span>
+      <span>↓</span>
+    </div>
+  </section>
+
+  <section class="comparison">
+    <h2>What the Film Showed → <span>What We Have Now</span></h2>
+
+    <div class="timeline">
+      <div class="era">
+        <div class="era-year past">1991</div>
+        <h3>The Vision</h3>
+        <ul>
+          <li>AI agent searches for a person across databases</li>
+          <li>Real-time status updates as it works</li>
+          <li>Visual feedback showing search progress</li>
+          <li>Natural language interaction</li>
+          <li>Agent has personality and communicates findings</li>
+          <li>Instant access to global information</li>
+        </ul>
+      </div>
+
+      <div class="timeline-line"></div>
+
+      <div class="era now">
+        <div class="era-year now">2026</div>
+        <h3>The Reality</h3>
+        <ul>
+          <li>Claude, GPT, Gemini search and analyze</li>
+          <li>Streaming responses show thinking in real-time</li>
+          <li>MCP tools report progress as they execute</li>
+          <li>Voice assistants, chat interfaces everywhere</li>
+          <li>Customizable agent personalities (OpenClaw, etc.)</li>
+          <li>Internet, APIs, databases at our fingertips</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="the-point">
+    <h2>The Point</h2>
+    <p>
+      Science fiction doesn't just predict the future—<span class="highlight">it blueprints it</span>.
+    </p>
+    <p>
+      The filmmakers in 1991 imagined what a helpful AI should feel like:
+      <span class="highlight">transparent, communicative, showing its work</span>.
+    </p>
+    <p>
+      Now we're building it. And we can make it even better than they dreamed.
+    </p>
+
+    <div class="meta-moment">
+      <p>
+        Right now, you're reading this because an AI agent (Claude) built this page
+        after a human asked it to recreate the 1991 vision. The prophecy is typing itself.
+      </p>
+    </div>
+  </section>
+
+  <section class="cta">
+    <h2>Experience It</h2>
+    <div class="cta-buttons">
+      <a href="index.html" class="btn btn-primary">Try the Knowledge Navigator Demo</a>
+      <a href="https://github.com/tysonk/knowledge-navigator-agent" class="btn btn-secondary">View on GitHub</a>
+    </div>
+  </section>
+
+  <footer>
+    <p>
+      Inspired by <a href="https://youtu.be/kKhzsx2gVgM" target="_blank">"Until the End of the World"</a> (1991)
+      · Built with AI · MIT License
+    </p>
+  </footer>
+
+</body>
+</html>

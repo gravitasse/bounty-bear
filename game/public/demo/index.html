@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Knowledge Navigator - 1991 Style AI Agent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0f1a;
+      --surface: #111827;
+      --surface-alt: #1e293b;
+      --border: #334155;
+      --text: #f1f5f9;
+      --text-dim: #94a3b8;
+      --accent: #22d3ee;
+      --accent-glow: rgba(34, 211, 238, 0.3);
+      --green: #4ade80;
+      --yellow: #fbbf24;
+      --red: #f87171;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 1.25rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--accent), #818cf8);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .badge {
+      font-size: 0.65rem;
+      padding: 4px 8px;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--text-dim);
+    }
+
+    /* Main Layout */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 0;
+    }
+
+    @media (max-width: 768px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        display: none;
+      }
+    }
+
+    /* Sidebar - Agent Avatar */
+    .sidebar {
+      border-right: 1px solid var(--border);
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      background: var(--surface);
+    }
+
+    .avatar-container {
+      position: relative;
+    }
+
+    .avatar {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1e3a5f, #0f172a);
+      border: 3px solid var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 64px;
+      box-shadow: 0 0 40px var(--accent-glow);
+      transition: all 0.3s;
+    }
+
+    .avatar.thinking {
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .avatar.speaking {
+      border-color: var(--green);
+      box-shadow: 0 0 40px rgba(74, 222, 128, 0.3);
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.02); opacity: 0.9; }
+    }
+
+    .status-indicator {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--green);
+      border: 3px solid var(--surface);
+    }
+
+    .status-indicator.thinking {
+      background: var(--yellow);
+      animation: blink 0.8s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .agent-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .agent-role {
+      font-size: 0.875rem;
+      color: var(--text-dim);
+      text-align: center;
+    }
+
+    .agent-stats {
+      width: 100%;
+      padding: 16px;
+      background: var(--bg);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .stat {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+    }
+
+    .stat-label {
+      color: var(--text-dim);
+    }
+
+    .stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent);
+    }
+
+    /* Chat Area */
+    .chat-area {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 65px);
+    }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .message {
+      max-width: 85%;
+      padding: 16px 20px;
+      border-radius: 16px;
+      line-height: 1.6;
+    }
+
+    .message.user {
+      align-self: flex-end;
+      background: var(--accent);
+      color: var(--bg);
+      border-bottom-right-radius: 4px;
+    }
+
+    .message.agent {
+      align-self: flex-start;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+    }
+
+    .message.status {
+      align-self: flex-start;
+      background: transparent;
+      border: none;
+      padding: 8px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .message.status .icon {
+      font-size: 1rem;
+    }
+
+    .message.status.active {
+      color: var(--yellow);
+    }
+
+    .message.status.complete {
+      color: var(--green);
+    }
+
+    /* Progress bar in messages */
+    .progress-container {
+      margin-top: 12px;
+      background: var(--bg);
+      border-radius: 4px;
+      height: 6px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), #818cf8);
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+
+    /* Results card */
+    .results-card {
+      margin-top: 12px;
+      padding: 16px;
+      background: var(--bg);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .result-item {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .result-item:last-child {
+      border-bottom: none;
+    }
+
+    .result-name {
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .result-detail {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+
+    /* Input Area */
+    .input-area {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .input-wrapper {
+      display: flex;
+      gap: 12px;
+    }
+
+    .input-field {
+      flex: 1;
+      padding: 14px 20px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 1rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .input-field:focus {
+      border-color: var(--accent);
+    }
+
+    .input-field::placeholder {
+      color: var(--text-dim);
+    }
+
+    .send-btn {
+      padding: 14px 24px;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .send-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Film reference banner */
+    .film-banner {
+      padding: 12px 24px;
+      background: var(--surface-alt);
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      text-align: center;
+    }
+
+    .film-banner a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .film-banner a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🔍</div>
+      Knowledge Navigator
+    </div>
+    <span class="badge">Inspired by "Until the End of the World" (1991)</span>
+  </header>
+
+  <main>
+    <aside class="sidebar">
+      <div class="avatar-container">
+        <div class="avatar" id="avatar">🤖</div>
+        <div class="status-indicator" id="statusIndicator"></div>
+      </div>
+      <div class="agent-name">Navigator</div>
+      <div class="agent-role">AI Research Assistant<br>Real-time feedback enabled</div>
+
+      <div class="agent-stats">
+        <div class="stat">
+          <span class="stat-label">Status</span>
+          <span class="stat-value" id="agentStatus">Ready</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Searches</span>
+          <span class="stat-value" id="searchCount">0</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Results Found</span>
+          <span class="stat-value" id="resultCount">0</span>
+        </div>
+      </div>
+    </aside>
+
+    <section class="chat-area">
+      <div class="messages" id="messages">
+        <div class="message agent">
+          Hello! I'm your Knowledge Navigator. I search databases and provide real-time feedback as I work - just like the AI in "Until the End of the World" (1991).
+          <br><br>
+          Try asking me to find someone or research a topic. Watch the left panel as I work!
+        </div>
+      </div>
+
+      <div class="input-area">
+        <div class="input-wrapper">
+          <input
+            type="text"
+            class="input-field"
+            id="inputField"
+            placeholder="Search for a person, topic, or ask a question..."
+            autocomplete="off"
+          >
+          <button class="send-btn" id="sendBtn">Search</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="film-banner">
+    Inspired by <a href="https://youtu.be/kKhzsx2gVgM?si=dM2196iuutp6OW66" target="_blank">"Until the End of the World" (1991)</a> directed by Wim Wenders
+  </footer>
+
+  <script>
+    const messages = document.getElementById('messages');
+    const inputField = document.getElementById('inputField');
+    const sendBtn = document.getElementById('sendBtn');
+    const avatar = document.getElementById('avatar');
+    const statusIndicator = document.getElementById('statusIndicator');
+    const agentStatus = document.getElementById('agentStatus');
+    const searchCount = document.getElementById('searchCount');
+    const resultCount = document.getElementById('resultCount');
+
+    let searches = 0;
+    let results = 0;
+
+    function addMessage(content, type = 'agent') {
+      const msg = document.createElement('div');
+      msg.className = `message ${type}`;
+      msg.innerHTML = content;
+      messages.appendChild(msg);
+      messages.scrollTop = messages.scrollHeight;
+      return msg;
+    }
+
+    function addStatus(icon, text, state = 'active') {
+      const msg = document.createElement('div');
+      msg.className = `message status ${state}`;
+      msg.innerHTML = `<span class="icon">${icon}</span> ${text}`;
+      messages.appendChild(msg);
+      messages.scrollTop = messages.scrollHeight;
+      return msg;
+    }
+
+    function setAgentState(state) {
+      avatar.className = 'avatar ' + state;
+      statusIndicator.className = 'status-indicator ' + state;
+
+      if (state === 'thinking') {
+        agentStatus.textContent = 'Searching...';
+      } else if (state === 'speaking') {
+        agentStatus.textContent = 'Responding';
+      } else {
+        agentStatus.textContent = 'Ready';
+      }
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function simulateSearch(query) {
+      setAgentState('thinking');
+      sendBtn.disabled = true;
+      searches++;
+      searchCount.textContent = searches;
+
+      // User message
+      addMessage(query, 'user');
+
+      await sleep(500);
+
+      // Status updates - the magic of Knowledge Navigator
+      const s1 = addStatus('🔍', `Searching for "${query}"...`);
+      await sleep(1200);
+
+      s1.className = 'message status complete';
+      const s2 = addStatus('📡', 'Querying databases...');
+      await sleep(1000);
+
+      s2.className = 'message status complete';
+      const s3 = addStatus('📊', 'Found 2,847 results - filtering...');
+      await sleep(800);
+
+      s3.className = 'message status complete';
+      const s4 = addStatus('🎯', 'Analyzing top matches...');
+      await sleep(1000);
+
+      s4.className = 'message status complete';
+      addStatus('✅', 'Search complete', 'complete');
+
+      await sleep(400);
+      setAgentState('speaking');
+
+      // Generate mock results
+      const mockResults = generateMockResults(query);
+      results += mockResults.length;
+      resultCount.textContent = results;
+
+      // Final response with results
+      let responseHTML = `I found <strong>${mockResults.length} relevant results</strong> for "${query}":`;
+      responseHTML += '<div class="results-card">';
+      mockResults.forEach(r => {
+        responseHTML += `
+          <div class="result-item">
+            <div class="result-name">${r.name}</div>
+            <div class="result-detail">${r.detail}</div>
+          </div>
+        `;
+      });
+      responseHTML += '</div>';
+      responseHTML += '<br>Would you like me to dig deeper into any of these?';
+
+      addMessage(responseHTML, 'agent');
+
+      await sleep(500);
+      setAgentState('');
+      sendBtn.disabled = false;
+      inputField.focus();
+    }
+
+    function generateMockResults(query) {
+      const names = ['Dr. Sarah Chen', 'Prof. Michael Torres', 'Dr. Aisha Patel', 'James Wilson', 'Dr. Emily Nakamura'];
+      const orgs = ['Stanford AI Lab', 'MIT CSAIL', 'DeepMind', 'OpenAI', 'Google Research'];
+      const fields = ['Machine Learning', 'Neural Networks', 'NLP', 'Computer Vision', 'Robotics'];
+
+      const count = Math.floor(Math.random() * 3) + 2;
+      const results = [];
+
+      for (let i = 0; i < count; i++) {
+        results.push({
+          name: names[i % names.length],
+          detail: `${orgs[i % orgs.length]} • ${fields[i % fields.length]} • ${Math.floor(Math.random() * 50) + 10} publications`
+        });
+      }
+
+      return results;
+    }
+
+    sendBtn.addEventListener('click', () => {
+      const query = inputField.value.trim();
+      if (query) {
+        inputField.value = '';
+        simulateSearch(query);
+      }
+    });
+
+    inputField.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        sendBtn.click();
+      }
+    });
+
+    // Focus input on load
+    inputField.focus();
+  </script>
+</body>
+</html>

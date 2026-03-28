@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#00ff41">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="AI search agent inspired by Until the End of the World (1991). The Bounty Bear finds anyone, anywhere.">
+  <title>BOUNTY BEAR - 1991 AI Agent Simulation</title>
+  <link rel="manifest" href="../manifest.json">
+  <link rel="apple-touch-icon" href="../icons/bear-192.png">
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --terminal-bg: #0d1117;
+      --green: #00ff41;
+      --green-dim: rgba(0, 255, 65, 0.3);
+      --amber: #ffb000;
+      --red: #ff3333;
+      --text: #e0e0e0;
+      --border: #333;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      font-family: 'VT323', monospace;
+      background: var(--bg);
+      color: var(--green);
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      overscroll-behavior: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* CRT Effect */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.15),
+        rgba(0, 0, 0, 0.15) 1px,
+        transparent 1px,
+        transparent 2px
+      );
+      pointer-events: none;
+      z-index: 9999;
+      touch-action: none;
+    }
+
+    /* Header */
+    header {
+      padding: 16px 24px;
+      border-bottom: 2px solid var(--green);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--terminal-bg);
+    }
+
+    .logo {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-bear {
+      font-size: 2rem;
+    }
+
+    .system-status {
+      font-size: 1.2rem;
+      color: var(--amber);
+    }
+
+    /* Main Layout */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 280px 1fr 320px;
+      grid-template-rows: 1fr;
+      min-height: 0; /* Important for flex child to shrink */
+      max-height: calc(100vh - 60px);
+      overflow: hidden;
+    }
+
+    /* Mobile-only INFO toggle button — hidden on desktop */
+    .mobile-info-btn {
+      display: none;
+    }
+
+    @media (max-width: 1024px) {
+      header {
+        padding: 2px 8px;
+        border-bottom: 1px solid var(--green);
+      }
+      .logo {
+        font-size: 0.6rem;
+        gap: 6px;
+      }
+      .logo-bear {
+        display: none;
+      }
+      .system-status {
+        font-size: 0.95rem;
+      }
+      main {
+        display: flex;
+        flex-direction: column;
+        overflow: visible; /* CRITICAL: prevent pulse glow clipping */
+        position: relative;
+        max-height: calc(100vh - 20px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .info-panel {
+        display: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 500 !important;
+        border-left: none;
+        border-bottom: 2px solid var(--green);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        background: var(--terminal-bg) !important;
+      }
+      .info-panel.mobile-open {
+        display: block;
+      }
+      /* Hide elements during Info View to prevent 'pulse leak' */
+      .info-view-active .sidebar .bear-container,
+      .info-view-active .sidebar .bear-status,
+      .info-view-active .sidebar .stats-box,
+      .info-view-active .sidebar .target-card {
+        display: none !important;
+      }
+      .info-view-active .sidebar {
+        border: none !important;
+        background: none !important;
+        margin: 0 !important;
+        padding: 10px !important;
+      }
+      .sidebar {
+        flex: 0 0 auto;
+        display: grid !important;
+        grid-template-columns: 100% !important;
+        gap: 16px !important;
+        padding: 20px 16px !important;
+        order: -1;
+        width: 100% !important;
+        box-sizing: border-box;
+        background: rgba(0, 0, 0, 0.4) !important;
+        border: 1px solid var(--green) !important;
+        border-radius: 8px !important;
+        margin: 0 0 16px 0 !important;
+        align-items: center !important;
+        justify-items: center !important;
+        text-align: center !important; /* Force global centering */
+      }
+      .sidebar > .stats-box, .sidebar > .target-card { 
+        width: 100% !important; 
+        max-width: 100% !important; 
+        margin: 0 !important;
+      }
+      .bear-container { 
+        width: 100px !important; 
+        height: 100px !important; 
+        font-size: 60px !important;
+        outline-width: 3px !important;
+        margin: 10px auto 24px auto !important; /* Increased bottom margin for pulse */
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        flex-shrink: 0 !important;
+        justify-self: center !important;
+      }
+      .bear-status {
+        width: 100% !important;
+        font-size: 0.8rem;
+        letter-spacing: 0;
+        white-space: nowrap;
+        transition: font-size 0.3s;
+        text-align: center !important;
+      }
+      .target-found .bear-status { font-size: 1.1rem !important; margin-bottom: 2px !important; }
+      .stats-box {
+        flex: 1;
+        padding: 2px 6px;
+        font-size: 0.95rem;
+        border: 1px solid var(--border);
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.3s;
+      }
+      .stat-row {
+        flex: 1 !important; /* Force equal 1/3 width distribution */
+        padding: 0;
+        border-bottom: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        align-items: center;
+        text-align: center;
+        font-size: 1.1rem; /* Bumping label size significantly */
+        transition: font-size 0.3s;
+      }
+      .stat-value {
+        font-size: 1.35rem; /* Super-sizing the numeric result */
+        font-weight: bold;
+        transition: font-size 0.3s;
+      }
+      .mobile-info-btn {
+        display: block !important;
+        width: 100% !important;
+        background: rgba(255, 176, 0, 0.1) !important;
+        border: 2px solid var(--amber) !important;
+        color: var(--amber) !important;
+        font-family: 'VT323', monospace;
+        font-size: 1.15rem !important;
+        font-weight: bold !important;
+        padding: 8px 16px !important;
+        cursor: pointer;
+        border-radius: 8px !important;
+        margin-top: 8px !important;
+        text-align: center;
+        width: auto !important;
+        min-width: 140px;
+        margin-left: auto !important;
+        margin-right: auto !important;
+      }
+      .mobile-info-btn:hover { background: rgba(255, 176, 0, 0.15); }
+      .mobile-info-btn.active {
+        background: rgba(255, 176, 0, 0.2);
+        border-color: var(--green);
+        color: var(--green);
+      }
+      .mobile-close-info {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        background: rgba(255, 51, 51, 0.1);
+        border: none;
+        border-bottom: 1px solid var(--border);
+        color: var(--red);
+        font-family: 'VT323', monospace;
+        font-size: 1.1rem;
+        cursor: pointer;
+        text-align: center;
+      }
+      .mobile-close-info:hover { background: rgba(255, 51, 51, 0.2); }
+      
+      /* State-Dependent Scale Overrides */
+      .searching-active .bear-container {
+        width: 100px !important;
+        height: 100px !important;
+        font-size: 60px !important;
+        outline-width: 3px !important;
+      }
+      .searching-active .bear-status {
+        font-size: 1.6rem !important;
+        letter-spacing: 4px;
+        text-align: center;
+      }
+      .searching-active .stats-box, .searching-active .target-card, .searching-active .mobile-info-btn {
+        display: none !important;
+      }
+
+      .target-found .bear-container {
+        width: 64px !important;
+        height: 64px !important;
+        font-size: 36px !important;
+        outline-width: 2px !important;
+      }
+      .target-found .target-card {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: rgba(0, 255, 65, 0.15) !important;
+        border: 2px solid var(--green) !important;
+        padding: 8px 12px !important; /* Condensed padding */
+        border-radius: 6px !important;
+        text-align: center !important;
+        margin: 0 auto !important;
+        animation: slideIn 0.3s forwards;
+        width: 100% !important;
+        gap: 2px !important; /* Tight vertical spacing */
+      }
+      .target-found .target-label { text-align: center !important; width: 100%; display: block; margin-bottom: 0 !important; font-weight: bold; opacity: 0.8; font-size: 0.95rem !important; }
+      .target-card .target-name { font-size: 1.4rem !important; font-weight: bold; color: var(--green); text-align: center !important; width: 100%; display: block; margin: 0 !important; line-height: 1.2 !important; }
+      .target-card .target-location { font-size: 1rem !important; color: var(--text); text-align: center !important; width: 100%; display: block; margin: 0 !important; line-height: 1.2 !important; }
+
+      .stats-box {
+        display: none !important; /* Hide stats on initial load/searching */
+        flex-direction: row !important;
+        justify-content: space-around !important;
+        width: 100% !important;
+        padding: 8px 0 !important; /* Reduced padding */
+        border-top: 1px solid var(--green-dim) !important;
+        background: none !important;
+      }
+      .target-found .sidebar { gap: 8px !important; padding: 10px 16px !important; }
+      .mobile-compact .sidebar { gap: 12px !important; padding: 12px 16px !important; }
+      .mobile-compact .stats-box, .target-found .stats-box { display: flex !important; }
+
+      .mobile-compact .bear-container {
+        width: 48px !important;
+        height: 48px !important;
+        font-size: 26px !important;
+        outline-width: 2px !important;
+      }
+      .mobile-compact .bear-status { font-size: 1.1rem; text-align: center; }
+      .mobile-compact .target-card { display: block !important; }
+      .terminal {
+        flex: 1;
+        height: auto;
+        min-height: 0;
+      }
+    }
+    
+    .target-card { display: none; }
+    @keyframes slideIn {
+      from { transform: translateY(-10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    @keyframes pulse-ready {
+      0%, 100% { 
+        box-shadow: 0 0 10px var(--green); 
+        outline-color: var(--green);
+        outline-width: 2px;
+        transform: scale(1) translateZ(0);
+      }
+      50% { 
+        box-shadow: 0 0 35px 10px var(--green-dim); 
+        outline-color: var(--amber);
+        outline-width: 5px;
+        transform: scale(1.1) translateZ(0);
+      }
+    }
+    
+    .bear-container.ready {
+      animation: pulse-ready 1.5s infinite ease-in-out;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    /* Sidebar - Bear Avatar */
+    .sidebar {
+      border: 2px solid var(--green);
+      margin: 8px;
+      border-radius: 4px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      background: var(--terminal-bg);
+      overflow-y: auto;
+      overflow-x: visible;
+      min-height: 0;
+    }
+    
+
+    .bear-container {
+      width: 180px;
+      height: 180px;
+      outline: 2px solid var(--green);
+      outline-offset: -2px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 100px;
+      background: rgba(0, 255, 65, 0.05);
+      position: relative;
+      transition: all 0.3s;
+      transform: translateZ(0);
+    }
+
+    .bear-container.searching {
+      animation: pulse 0.8s ease-in-out infinite;
+      outline-color: var(--amber);
+      box-shadow: 0 0 30px rgba(255, 176, 0, 0.3);
+    }
+
+    .bear-container.found {
+      border-color: var(--green);
+      box-shadow: 0 0 30px var(--green-dim);
+      animation: none;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .bear-status {
+      font-size: 1.4rem;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .bear-status.searching { color: var(--amber); }
+    .bear-status.ready { color: var(--green); }
+    .bear-status.found { color: var(--green); }
+
+    .stats-box {
+      width: 100%;
+      border: 1px solid var(--border);
+      padding: 16px;
+      font-size: 1.2rem;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px dashed var(--border);
+    }
+
+    .stat-row:last-child {
+      border-bottom: none;
+    }
+
+    .stat-value {
+      color: var(--amber);
+    }
+
+    /* Terminal Area */
+    .terminal {
+      display: flex;
+      flex-direction: column;
+      background: var(--terminal-bg);
+      min-height: 0; /* Allow flex child to shrink */
+      overflow: hidden;
+    }
+
+    .terminal-header {
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--border);
+      font-size: 1rem;
+      color: var(--text);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .terminal-output {
+      flex: 1;
+      overflow-y: scroll;
+      overflow-x: hidden;
+      padding: 24px;
+      font-size: 1.4rem;
+      line-height: 1.8;
+      min-height: 0; /* Critical for flex overflow */
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+      position: relative;
+      z-index: 1;
+    }
+
+    .terminal-line {
+      margin-bottom: 8px;
+      opacity: 0;
+      animation: fadeIn 0.3s forwards;
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    .terminal-line.system {
+      color: var(--amber);
+    }
+
+    .terminal-line.success {
+      color: var(--green);
+      font-weight: bold;
+    }
+
+    .terminal-line.highlight {
+      background: var(--green-dim);
+      padding: 8px 12px;
+      margin: 12px 0;
+      border-left: 4px solid var(--green);
+    }
+
+    .terminal-line.result {
+      color: var(--text);
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      margin: 8px 0;
+      border-radius: 4px;
+    }
+
+    .terminal-line .money {
+      color: var(--amber);
+      font-size: 1.6rem;
+    }
+
+    .terminal-input-area {
+      padding: 16px 24px;
+      border-top: 2px solid var(--green);
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      background: rgba(0, 0, 0, 0.3);
+      position: relative;
+      z-index: 10; /* Ensure it's above terminal output */
+    }
+
+    /* Click to start hint */
+    .click-hint {
+      position: absolute;
+      top: -40px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--amber);
+      color: var(--bg);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      animation: bounce-hint 1s ease-in-out infinite;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 200; /* Definitively on top of UI elements */
+    }
+
+    .click-hint::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 8px solid var(--amber);
+    }
+
+    .click-hint.hidden {
+      display: none;
+    }
+
+    @keyframes bounce-hint {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-5px); }
+    }
+
+    /* Pulsing glow on input before click */
+    .terminal-input.waiting {
+      animation: pulse-input 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-input {
+      0%, 100% { box-shadow: 0 0 0 0 var(--green-dim); }
+      50% { box-shadow: 0 0 20px 5px var(--green-dim); }
+    }
+
+    .prompt {
+      color: var(--green);
+      font-size: 1.4rem;
+    }
+
+    .terminal-input {
+      flex: 1;
+      max-width: 400px;
+      background: transparent;
+      border: none;
+      color: var(--green);
+      font-family: 'VT323', monospace;
+      font-size: 1.4rem;
+      outline: none;
+      caret-color: var(--green);
+    }
+
+    .terminal-input::placeholder {
+      color: rgba(0, 255, 65, 0.4);
+    }
+
+    /* Info Panel */
+    .info-panel {
+      border-left: 2px solid var(--green);
+      padding: 24px;
+      background: var(--terminal-bg);
+      overflow-y: auto;
+    }
+
+    .info-section {
+      margin-bottom: 32px;
+    }
+
+    .info-title {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.6rem;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      color: var(--amber);
+    }
+
+    .film-quote {
+      font-size: 1.2rem;
+      font-style: italic;
+      color: var(--text);
+      padding: 16px;
+      border-left: 2px solid var(--amber);
+      margin-bottom: 12px;
+    }
+
+    .film-credit {
+      font-size: 1rem;
+      color: var(--border);
+    }
+
+    .instructions {
+      font-size: 1.2rem;
+      color: var(--text);
+      line-height: 1.8;
+    }
+
+    .instructions li {
+      margin-bottom: 8px;
+      list-style: none;
+    }
+
+    .instructions li::before {
+      content: '>';
+      color: var(--green);
+      margin-right: 8px;
+    }
+
+    /* Blinking cursor */
+    .cursor {
+      display: inline-block;
+      width: 12px;
+      height: 1.2em;
+      background: var(--green);
+      margin-left: 4px;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    /* Progress bar */
+    .progress-bar {
+      width: 100%;
+      height: 20px;
+      background: var(--bg);
+      border: 1px solid var(--green);
+      margin: 12px 0;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--green);
+      width: 0%;
+      transition: width 0.3s;
+    }
+
+    /* Submit button */
+    .submit-btn {
+      background: var(--green);
+      border: 2px solid var(--green);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-family: 'VT323', monospace;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: var(--bg);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .submit-btn:hover {
+      background: transparent;
+      color: var(--green);
+      transform: scale(1.05);
+    }
+
+    .submit-btn:active {
+      transform: scale(0.98);
+    }
+
+    .submit-btn:disabled {
+      background: var(--border);
+      border-color: var(--border);
+      color: var(--text);
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Voice button */
+    .voice-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--green);
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .voice-btn:hover {
+      background: rgba(0, 255, 65, 0.1);
+      transform: scale(1.1);
+    }
+
+    .voice-btn.muted {
+      background: var(--border);
+      opacity: 0.5;
+    }
+
+    .voice-btn.active {
+      animation: pulse-voice 1s infinite;
+    }
+
+    @keyframes pulse-voice {
+      0%, 100% { box-shadow: 0 0 0 0 var(--green); }
+      50% { box-shadow: 0 0 20px 5px var(--green-dim); }
+    }
+    /* Bounty Log */
+    .bounty-log {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      padding: 8px;
+      background: rgba(0, 0, 0, 0.2);
+    }
+    .log-entry {
+      font-size: 1rem;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(0, 255, 65, 0.1);
+      display: flex;
+      justify-content: space-between;
+    }
+    .log-entry:last-child { border-bottom: none; }
+    .log-name { color: var(--green); }
+    .log-bounty { color: var(--amber); }
+    .log-header { display: flex; justify-content: space-between; align-items: center; }
+    .clear-log-btn {
+      background: none;
+      border: 1px solid var(--red);
+      color: var(--red);
+      font-family: 'VT323', monospace;
+      font-size: 0.85rem;
+      padding: 2px 8px;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: all 0.2s;
+    }
+    .clear-log-btn:hover { background: rgba(255, 51, 51, 0.15); }
+
+    /* ═══════════════════════════════════════════════════════════════ */
+    /* MOBILE RESPONSIVE — phones only, does NOT affect desktop      */
+    /* ═══════════════════════════════════════════════════════════════ */
+
+    /* Tablets and small laptops */
+    @media (max-width: 768px) {
+    }
+
+    /* Phones */
+    @media (max-width: 600px) {
+
+      .terminal-header {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+      }
+
+      .terminal-output {
+        padding: 12px 16px;
+        font-size: 1.15rem;
+        line-height: 1.6;
+      }
+
+      .terminal-line .money {
+        font-size: 1.3rem;
+      }
+
+      .terminal-line.highlight {
+        padding: 6px 8px;
+        margin: 8px 0;
+      }
+
+      .terminal-input-area {
+        padding: 10px 16px;
+        gap: 8px;
+      }
+
+      .prompt {
+        font-size: 1.15rem;
+      }
+
+      .terminal-input {
+        font-size: 1.15rem;
+      }
+
+      .submit-btn {
+        padding: 10px 16px;
+        font-size: 1.1rem;
+      }
+
+      .voice-btn {
+        padding: 8px 12px;
+        font-size: 1rem;
+      }
+
+      .click-hint {
+        font-size: 0.9rem;
+        padding: 6px 12px;
+        top: -35px;
+      }
+
+      .progress-bar {
+        height: 14px;
+      }
+
+      /* Result cards */
+      .result {
+        font-size: 1rem;
+      }
+    }
+
+    /* Extra small phones (iPhone SE etc.) */
+    @media (max-width: 375px) {
+      .logo span:not(.logo-bear) {
+        font-size: 0.45rem;
+      }
+      .terminal-output {
+        padding: 8px;
+        font-size: 1.05rem;
+      }
+      .terminal-input-area {
+        padding: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <span class="logo-bear">🐻</span>
+      <span>BOUNTY BEAR v1.991</span>
+    </div>
+    <div class="system-status" id="systemStatus">SYSTEM READY</div>
+  </header>
+
+  <main>
+    <aside class="sidebar">
+      <div class="bear-container" id="bearContainer">
+        🐻
+      </div>
+      <div class="bear-status ready" id="bearStatus">READY</div>
+
+      <div class="stats-box">
+        <div class="stat-row">
+          <span>SEARCHES</span>
+          <span class="stat-value" id="searchCount">0</span>
+        </div>
+        <div class="stat-row">
+          <span>TARGETS FOUND</span>
+          <span class="stat-value" id="foundCount">0</span>
+        </div>
+        <div class="stat-row">
+          <span>BOUNTIES</span>
+          <span class="stat-value" id="bountyTotal">$0</span>
+        </div>
+      </div> <!-- End stats-box -->
+      <div class="target-card" id="targetCard">
+        <div class="target-label">POSITIVE ID:</div>
+        <div class="target-name" id="lastTargetName">---</div>
+        <div class="target-location" id="lastTargetLocation">---</div>
+      </div>
+
+      <button class="mobile-info-btn" id="mobileInfoBtn" title="Toggle info panel">📋 INFO</button>
+    </aside>
+
+    <section class="terminal">
+      <div class="terminal-header">
+        <span>BOUNTY_BEAR_TERMINAL</span>
+        <span id="datetime"></span>
+      </div>
+      <div class="terminal-output" id="output">
+        <div class="terminal-line system">BOUNTY BEAR TRACKING SYSTEM v1.991</div>
+        <div class="terminal-line system">INSPIRED BY "UNTIL THE END OF THE WORLD" (1991)</div>
+        <div class="terminal-line">──────────────────────────────────────</div>
+        <div class="terminal-line">I'M THE BEAR. THE BOUNTY BEAR.</div>
+        <div class="terminal-line">I FIND THEM HERE. I FIND THEM THERE.</div>
+        <div class="terminal-line">I CAN FIND THEM ANYWHERE.</div>
+        <div class="terminal-line">THE BEAR - ADVANCED BOUNTY BANK PROGRAMMING.</div>
+        <div class="terminal-line">──────────────────────────────────────</div>
+        <div class="terminal-line system">ENTER A NAME TO BEGIN SEARCH...</div>
+      </div>
+      <div class="terminal-input-area">
+        <div class="click-hint" id="clickHint">👆 CLICK HERE TO START</div>
+        <span class="prompt">SEARCH></span>
+        <input type="text" class="terminal-input waiting" id="searchInput" placeholder="Enter target name..." autocomplete="off">
+        <button id="submitBtn" class="submit-btn" title="Start search">SEARCH</button>
+        <button id="voiceBtn" class="voice-btn" title="Click to enable voice">🔊</button>
+      </div>
+    </section>
+
+    <aside class="info-panel" id="infoPanel">
+      <button class="mobile-close-info" id="mobileCloseInfo" style="display:none;">✕ CLOSE INFO</button>
+      <div class="info-section">
+        <div class="info-title">THE PROPHECY</div>
+        <div class="film-quote">
+          "I'm the Bear. The Bounty Bear. I find them here. I find them there. I can find them anywhere."
+        </div>
+        <div class="film-credit">— Until the End of the World, 1991</div>
+      </div>
+
+      <div class="info-section">
+        <div class="info-title">INSTRUCTIONS</div>
+        <ul class="instructions">
+          <li>Enter any name to search</li>
+          <li>Watch real-time feedback</li>
+          <li>Bear finds your target</li>
+          <li>Collect the bounty</li>
+          <li>Press V to toggle voice</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <div class="info-title">1991 vs 2026</div>
+        <div class="instructions">
+          <li>Film: Fiction</li>
+          <li>Now: Reality</li>
+          <li>AI agents exist</li>
+          <li>You're using one</li>
+        </div>
+      </div>
+      <div class="info-section">
+        <div class="log-header">
+          <div class="info-title">BOUNTY LOG</div>
+          <button class="clear-log-btn" id="clearLogBtn" title="Clear bounty log">CLEAR</button>
+        </div>
+        <div class="bounty-log" id="bountyLog">
+          <!-- Log entries will be added here -->
+          <div class="log-entry" style="opacity: 0.5; justify-content: center;">NO RECORDS FOUND</div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Preload original audio clip -->
+  <audio id="imSearchingAudio" src="audio/im-searching.mp3" preload="auto"></audio>
+
+  <script>
+    const output = document.getElementById('output');
+    const searchInput = document.getElementById('searchInput');
+    const submitBtn = document.getElementById('submitBtn');
+    const bearContainer = document.getElementById('bearContainer');
+    const bearStatus = document.getElementById('bearStatus');
+    const systemStatus = document.getElementById('systemStatus');
+    const searchCountEl = document.getElementById('searchCount');
+    const foundCountEl = document.getElementById('foundCount');
+    const bountyTotalEl = document.getElementById('bountyTotal');
+    const datetimeEl = document.getElementById('datetime');
+
+    let searchCount = 0;
+    let foundCount = 0;
+    let bountyTotal = 0;
+    let bountyHistory = [];
+    let voiceEnabled = true;
+
+    // ═══════════════════════════════════════════════════════════════
+    // WEB AUDIO API - Synthesized sound effects
+    // ═══════════════════════════════════════════════════════════════
+    let audioCtx = null;
+
+    function initAudioContext() {
+      if (audioCtx) return;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+
+
+    function playChaChing() {
+      if (!audioCtx || !voiceEnabled) return;
+      const osc1 = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      
+      osc1.frequency.setValueAtTime(880, audioCtx.currentTime);
+      osc1.frequency.exponentialRampToValueAtTime(1760, audioCtx.currentTime + 0.1);
+      
+      osc2.frequency.setValueAtTime(1320, audioCtx.currentTime);
+      
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+      
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(audioCtx.destination);
+      
+      osc1.start();
+      osc2.start();
+      osc1.stop(audioCtx.currentTime + 0.5);
+      osc2.stop(audioCtx.currentTime + 0.5);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // WEB SPEECH API - Voice synthesis (works on all platforms)
+    // ═══════════════════════════════════════════════════════════════
+    const synth = window.speechSynthesis;
+    let bearVoice = null;
+
+    // Find a deep male voice for the bear - like the film
+    function loadVoices() {
+      const voices = synth.getVoices();
+      // Look for deep male voices by name
+      bearVoice = voices.find(v => v.name.includes('Daniel')) ||  // Mac deep male
+                  voices.find(v => v.name.includes('Alex')) ||    // Mac male
+                  voices.find(v => v.name.includes('Fred')) ||    // Mac deeper
+                  voices.find(v => v.name.includes('David')) ||   // Windows male
+                  voices.find(v => v.name.includes('Mark')) ||    // Windows male
+                  voices.find(v => v.name.toLowerCase().includes('male')) ||
+                  voices.find(v => v.lang === 'en-US') ||
+                  voices.find(v => v.lang.startsWith('en')) ||
+                  voices[0];
+      console.log('Bear voice:', bearVoice?.name, bearVoice?.lang);
+    }
+
+    // Load voices (async on some browsers)
+    if (synth.onvoiceschanged !== undefined) {
+      synth.onvoiceschanged = loadVoices;
+    }
+    loadVoices();
+
+    // Speak function - Web Speech API auto-queues, just don't cancel
+    function speak(text) {
+      if (!voiceEnabled || !synth) return;
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.voice = bearVoice;
+      // Natural male voice with deep cinematic register
+      utterance.rate = 1.0;   // Strong, measured
+      utterance.pitch = 0.8;  // Deeper male range
+      utterance.volume = 1.0;
+
+      synth.speak(utterance); // API queues automatically, no cancel = no cutoff
+    }
+
+    // Voice button element
+    const voiceBtn = document.getElementById('voiceBtn');
+    let audioInitialized = false;
+
+    // Initialize audio on first user interaction (required by browsers)
+    function initAudio() {
+      if (audioInitialized) return;
+      audioInitialized = true;
+      initAudioContext();
+      voiceBtn.classList.add('active');
+
+      // Hide the click hint
+      document.getElementById('clickHint').classList.add('hidden');
+      searchInput.classList.remove('waiting');
+
+      // Restore TTS intro
+      setTimeout(() => {
+        speak("I'm the bear. The bounty bear. I find them here. I find them there. I can find them anywhere. The bear - advanced bounty bank programming.");
+        addLine(`VOICE: ENABLED - Audio initialized`, 'system');
+      }, 100);
+
+      // Play the original film audio on first click
+      const introAudio = document.getElementById('imSearchingAudio');
+      if (introAudio) {
+        // Reset time in case it's played again
+        introAudio.currentTime = 0;
+        introAudio.play().catch(e => {
+          console.error("Audio block from browser:", e);
+          addLine(`SYSTEM LOG: Original audio playback blocked by browser`, 'system');
+        });
+      }
+    }
+
+    function stopAllAudio() {
+      if (synth) synth.cancel();
+      const imAudio = document.getElementById('imSearchingAudio');
+      if (imAudio) {
+        imAudio.pause();
+        imAudio.currentTime = 0;
+      }
+    }
+
+    // Voice button click handler - toggle mute after first init
+    voiceBtn.addEventListener('click', () => {
+      if (!audioInitialized) {
+        initAudio();
+      } else {
+        voiceEnabled = !voiceEnabled;
+        voiceBtn.classList.toggle('muted', !voiceEnabled);
+        voiceBtn.classList.toggle('active', voiceEnabled);
+        if (!voiceEnabled) {
+          stopAllAudio();
+        } else {
+          speak('Voice enabled');
+        }
+      }
+    });
+
+    // Init audio on first real user click (not programmatic focus)
+    searchInput.addEventListener('click', initAudio, { once: true });
+
+    // Toggle voice with 'V' key (only when not typing in search)
+    document.addEventListener('keydown', (e) => {
+      if ((e.key === 'v' || e.key === 'V') && document.activeElement !== searchInput) {
+        if (!audioInitialized) {
+          initAudio();
+        } else {
+          voiceEnabled = !voiceEnabled;
+          voiceBtn.classList.toggle('muted', !voiceEnabled);
+          voiceBtn.classList.toggle('active', voiceEnabled);
+          if (!voiceEnabled) {
+            stopAllAudio();
+          } else {
+            speak('Voice enabled');
+          }
+        }
+      }
+    });
+
+    // Update datetime
+    function updateDateTime() {
+      const now = new Date();
+      datetimeEl.textContent = now.toLocaleTimeString();
+    }
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
+
+    // ═══════════════════════════════════════════════════════════════
+    // SESSION PERSISTENCE
+    // ═══════════════════════════════════════════════════════════════
+    function saveSession() {
+      const session = {
+        searchCount,
+        foundCount,
+        bountyTotal,
+        bountyHistory
+      };
+      localStorage.setItem('bountyBearSession', JSON.stringify(session));
+    }
+
+    function loadSession() {
+      const saved = localStorage.getItem('bountyBearSession');
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          searchCount = data.searchCount || 0;
+          foundCount = data.foundCount || 0;
+          bountyTotal = data.bountyTotal || 0;
+          bountyHistory = data.bountyHistory || [];
+          
+          searchCountEl.textContent = searchCount;
+          foundCountEl.textContent = foundCount;
+          bountyTotalEl.textContent = '$' + bountyTotal.toLocaleString();
+          renderBountyLog();
+        } catch (e) {
+          console.error("Failed to load session:", e);
+        }
+      }
+    }
+
+    function addToLog(name, bounty) {
+      bountyHistory.unshift({ name, bounty, date: new Date().toISOString() });
+      if (bountyHistory.length > 20) bountyHistory.pop();
+      renderBountyLog();
+      saveSession();
+    }
+
+    function renderBountyLog() {
+      const logContainer = document.getElementById('bountyLog');
+      if (bountyHistory.length === 0) {
+        logContainer.innerHTML = '<div class="log-entry" style="opacity: 0.5; justify-content: center;">NO RECORDS FOUND</div>';
+        return;
+      }
+      
+      logContainer.innerHTML = bountyHistory.map(entry => `
+        <div class="log-entry">
+          <span class="log-name">${entry.name.toUpperCase()}</span>
+          <span class="log-bounty">$${entry.bounty.toLocaleString()}</span>
+        </div>
+      `).join('');
+    }
+
+    function clearBountyLog() {
+      bountyHistory = [];
+      renderBountyLog();
+      saveSession();
+    }
+
+    document.getElementById('clearLogBtn').addEventListener('click', clearBountyLog);
+
+    // Mobile INFO panel toggle
+    const mobileInfoBtn = document.getElementById('mobileInfoBtn');
+    const infoPanel = document.getElementById('infoPanel');
+    const mobileCloseInfo = document.getElementById('mobileCloseInfo');
+
+    function toggleInfoPanel(forceClose) {
+      const isOpen = forceClose ? false : !infoPanel.classList.contains('mobile-open');
+      infoPanel.classList.toggle('mobile-open', isOpen);
+      mainArea.classList.toggle('info-view-active', isOpen);
+      mobileInfoBtn.classList.toggle('active', isOpen);
+      mobileInfoBtn.textContent = isOpen ? '✕ CLOSE' : '📋 INFO';
+      mobileCloseInfo.style.display = isOpen ? 'block' : 'none';
+      if (isOpen) window.scrollTo(0, 0);
+    }
+
+    mobileInfoBtn.addEventListener('click', () => toggleInfoPanel());
+    mobileCloseInfo.addEventListener('click', () => toggleInfoPanel(true));
+
+    // Mobile: auto-scale sidebar when user taps search input
+    const mainArea = document.querySelector('main');
+    const isMobile = () => window.innerWidth <= 1024;
+    let forceCompact = false;
+    
+    // Reset layout zoom on bear click
+    bearContainer.addEventListener('click', () => {
+      if (bearContainer.classList.contains('searching')) return;
+      
+      // Reset input state but preserve terminal scroll history
+      searchInput.value = '';
+      searchInput.disabled = false;
+      submitBtn.disabled = false;
+      forceCompact = false;
+      
+      if (isMobile()) {
+        mainArea.classList.remove('mobile-compact', 'searching-active', 'target-found');
+        document.getElementById('lastTargetName').textContent = '---';
+        document.getElementById('lastTargetLocation').textContent = '---';
+        searchInput.blur();
+      }
+      
+      setBearState('ready');
+      addLine('──────────────────────────────────────');
+      addLine('SYSTEM RESET. ENTER A NAME TO BEGIN SEARCH...', 'system');
+    });
+
+    loadSession();
+
+    // Security: HTML escape function to prevent XSS attacks
+    function escapeHtml(text) {
+      if (typeof text !== 'string') return text;
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function addLine(text, className = '') {
+      const line = document.createElement('div');
+      line.className = `terminal-line ${className}`;
+      line.innerHTML = text;
+      output.appendChild(line);
+      output.scrollTop = output.scrollHeight;
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function setBearState(state) {
+      bearContainer.className = 'bear-container ' + state;
+      bearStatus.className = 'bear-status ' + state;
+
+      if (state === 'searching') {
+        bearStatus.textContent = 'SEARCHING...';
+        systemStatus.textContent = 'SEARCHING DATABASE';
+      } else if (state === 'found') {
+        bearStatus.textContent = 'TARGET FOUND';
+        systemStatus.textContent = 'POSITIVE ID';
+      } else {
+        bearStatus.textContent = 'READY';
+        systemStatus.textContent = 'SYSTEM READY';
+      }
+    }
+
+    async function performSearch(query) {
+      forceCompact = true;
+      if (isMobile()) {
+        mainArea.classList.remove('mobile-compact');
+        mainArea.classList.add('searching-active');
+      }
+      
+      const locations = [
+        'BERLIN', 'TOKYO', 'PARIS', 'NEW YORK', 'SYDNEY', 'LONDON',
+        'HONG KONG', 'MOSCOW', 'DUBAI', 'SAO PAULO', 'SINGAPORE', 'MUMBAI',
+        'JOHANNESBURG', 'CAIRO', 'MEXICO CITY', 'BUENOS AIRES', 'SEOUL', 'BANGKOK',
+        'AMSTERDAM', 'TORONTO', 'LOS ANGELES', 'VIENNA', 'PRAGUE', 'ISTANBUL',
+        'NAIROBI', 'MANILA', 'JAKARTA', 'ROME', 'BARCELONA', 'MIAMI'
+      ];
+      const location = locations[Math.floor(Math.random() * locations.length)];
+      const confidence = (97 + Math.random() * 2.9).toFixed(1);
+      
+      synth.cancel(); // Clear pending speech when starting new search
+      
+      const imAudio = document.getElementById('imSearchingAudio');
+      if (imAudio && voiceEnabled) {
+        imAudio.currentTime = 0;
+        imAudio.play().catch(e => console.error("Audio block from browser:", e));
+      }
+      
+      searchInput.disabled = true;
+      submitBtn.disabled = true;
+      searchCount++;
+      searchCountEl.textContent = searchCount;
+
+      setBearState('searching');
+
+      addLine(`──────────────────────────────────────`);
+      addLine(`SEARCHING FOR: "${escapeHtml(query.toUpperCase())}"`, 'system');
+
+      await sleep(1500);
+      addLine(`SEARCHING.`);
+      speak("Searching.");
+
+      await sleep(2000);
+      addLine(`I'M SEARCHING.`);
+      speak("I'm searching.");
+
+      await sleep(2000);
+      addLine(`I'M SEARCHING.`);
+      speak("I'm searching.");
+
+      await sleep(2500);
+      addLine(`GIVE ME A MINUTE.`);
+      speak("Give me a minute.");
+
+      await sleep(2500);
+      addLine(`I AM IDENTIFYING...`);
+      speak("I am identifying");
+
+      await sleep(1800);
+      addLine(`<div class="progress-bar"><div class="progress-fill" style="width: 30%"></div></div>`);
+
+      await sleep(2400);
+      addLine(`CROSS-REFERENCING DATABASES...`);
+
+      await sleep(1500);
+      // Update progress
+      const allProgressBars = output.querySelectorAll('.progress-fill');
+      const lastProgress = allProgressBars[allProgressBars.length - 1];
+      if (lastProgress) lastProgress.style.width = '60%';
+
+      await sleep(2100);
+      addLine(`MATCHING BIOMETRICS...`);
+
+      await sleep(1800);
+      if (lastProgress) lastProgress.style.width = '90%';
+
+      await sleep(1500);
+      if (lastProgress) lastProgress.style.width = '100%';
+
+      await sleep(1200);
+      setBearState('found');
+
+      if (isMobile()) {
+        mainArea.classList.remove('searching-active');
+        mainArea.classList.add('target-found');
+        document.getElementById('lastTargetName').textContent = query.toUpperCase();
+        document.getElementById('lastTargetLocation').textContent = location;
+      }
+
+      addLine(`I GOT HIM!`, 'success');
+      speak("I got him!");
+
+      await sleep(2500);
+      addLine(`THIS IS YOUR GUY!`, 'success');
+      speak("This is your guy!");
+
+      addLine(`<div class="result">
+        TARGET: ${escapeHtml(query.toUpperCase())}<br>
+        LOCATION: ${escapeHtml(location)}<br>
+        STATUS: POSITIVE IDENTIFICATION<br>
+        CONFIDENCE: ${confidence}%
+      </div>`, 'highlight');
+
+      foundCount++;
+      foundCountEl.textContent = foundCount;
+
+      const bounty = 500000;
+      bountyTotal += bounty;
+      bountyTotalEl.textContent = '$' + bountyTotal.toLocaleString();
+
+      await sleep(7000); // 7 seconds of prominence
+      
+      if (isMobile()) {
+        mainArea.classList.remove('searching-active', 'target-found');
+        mainArea.classList.add('mobile-compact');
+      }
+
+      addLine(`FINDERS FEE: <span class="money">$500,000</span>`, 'success');
+      speak("Finders fee: Five hundred thousand dollars!");
+      playChaChing();
+      addToLog(query, bounty);
+
+      await sleep(800);
+      addLine(`──────────────────────────────────────`);
+      addLine(`THE BEAR ALWAYS GETS HIS MAN. 🐻`, 'system');
+
+      await sleep(500);
+      setBearState('ready');
+      searchInput.disabled = false;
+      submitBtn.disabled = false;
+      searchInput.value = '';
+      
+      addLine(`CLICK THE BEAR ICON TO RESET TERMINAL AND START NEW SEARCH.`, 'system');
+    }
+
+    searchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && searchInput.value.trim()) {
+        performSearch(searchInput.value.trim());
+      }
+    });
+
+    // Submit button click handler
+    submitBtn.addEventListener('click', () => {
+      if (searchInput.value.trim()) {
+        performSearch(searchInput.value.trim());
+      }
+    });
+  </script>
+</body>
+</html>
