@@ -86,16 +86,25 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
   const [voiceMuted, setVoiceMutedState] = useState(false)
   const datetime = useDateTime()
 
-  // Speak intro on first interaction — audio context requires a user gesture
+  // Speak intro on mount — TTS doesn't need a user gesture on most browsers.
+  // AudioContext (cha-ching, blip) still needs a gesture, handled by activateAudio().
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const delay = setTimeout(() => {
+      speakQueued("I'm the Bear. The Bounty Bear.")
+      speakQueued("I find them here. I find them there.")
+      speakQueued("I can find them anywhere.")
+      speakQueued("The Bear. Advanced Bounty Bear programming.")
+    }, 600) // slight delay so page renders first
+    return () => clearTimeout(delay)
+  }, [])
+
+  // activateAudio — unlocks AudioContext on first user gesture (needed for cha-ching / blip)
   function activateAudio() {
     if (audioActivatedRef.current) return
     audioActivatedRef.current = true
     setAudioActivated(true)
     initAudio()
-    speakQueued("I'm the Bear. The Bounty Bear.")
-    speakQueued("I find them here. I find them there.")
-    speakQueued("I can find them anywhere.")
-    speakQueued("The Bear. Advanced Bounty Bear programming.")
   }
 
   function toggleVoice() {
@@ -174,6 +183,8 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
     setBearState('searching')
     setBearStatusLabel('SEARCHING...')
     activateAudio()
+    // Clear any in-flight intro speech so claim sequence starts clean
+    if (typeof window !== 'undefined') window.speechSynthesis.cancel()
     playImSearchingMp3()
 
     const target = selectedBounty
