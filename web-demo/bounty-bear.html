@@ -514,6 +514,7 @@
       gap: 12px;
       background: rgba(0, 0, 0, 0.3);
       position: relative;
+      z-index: 10; /* Ensure it's above terminal output */
     }
 
     /* Click to start hint */
@@ -531,6 +532,7 @@
       animation: bounce-hint 1s ease-in-out infinite;
       pointer-events: none;
       white-space: nowrap;
+      z-index: 200; /* Definitively on top of UI elements */
     }
 
     .click-hint::after {
