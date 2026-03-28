@@ -155,11 +155,11 @@
         align-items: center;
         border-right: none;
         border-bottom: 1px solid var(--green);
-        padding: 10px 12px;
-        gap: 8px;
-        overflow: hidden;
+        padding: 10px 20px;
+        gap: 12px;
         min-height: auto;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: visible; /* Prevent glow clipping */
       }
       .bear-container {
         width: 32px;
@@ -296,8 +296,9 @@
 
       /* Found / Compact State (Bear SMALL) */
       .mobile-compact .sidebar {
-        padding: 10px 6px;
-        gap: 6px;
+        padding: 10px 20px;
+        gap: 12px;
+        overflow: visible;
       }
       .mobile-compact .bear-container {
         width: 44px;
