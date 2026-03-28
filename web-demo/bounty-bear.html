@@ -139,14 +139,28 @@
         left: 0;
         right: 0;
         bottom: 0;
-        z-index: 100;
+        z-index: 500 !important;
         border-left: none;
         border-bottom: 2px solid var(--green);
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
+        background: var(--terminal-bg) !important;
       }
       .info-panel.mobile-open {
         display: block;
+      }
+      /* Hide elements during Info View to prevent 'pulse leak' */
+      .info-view-active .sidebar .bear-container,
+      .info-view-active .sidebar .bear-status,
+      .info-view-active .sidebar .stats-box,
+      .info-view-active .sidebar .target-card {
+        display: none !important;
+      }
+      .info-view-active .sidebar {
+        border: none !important;
+        background: none !important;
+        margin: 0 !important;
+        padding: 10px !important;
       }
       .sidebar {
         flex: 0 0 auto;
@@ -221,13 +235,17 @@
         border: 2px solid var(--amber) !important;
         color: var(--amber) !important;
         font-family: 'VT323', monospace;
-        font-size: 1.25rem !important;
+        font-size: 1.15rem !important;
         font-weight: bold !important;
-        padding: 12px !important;
+        padding: 8px 16px !important;
         cursor: pointer;
         border-radius: 8px !important;
         margin-top: 8px !important;
         text-align: center;
+        width: auto !important;
+        min-width: 140px;
+        margin-left: auto !important;
+        margin-right: auto !important;
       }
       .mobile-info-btn:hover { background: rgba(255, 176, 0, 0.15); }
       .mobile-info-btn.active {
@@ -1151,9 +1169,11 @@
     function toggleInfoPanel(forceClose) {
       const isOpen = forceClose ? false : !infoPanel.classList.contains('mobile-open');
       infoPanel.classList.toggle('mobile-open', isOpen);
+      mainArea.classList.toggle('info-view-active', isOpen);
       mobileInfoBtn.classList.toggle('active', isOpen);
       mobileInfoBtn.textContent = isOpen ? '✕ CLOSE' : '📋 INFO';
       mobileCloseInfo.style.display = isOpen ? 'block' : 'none';
+      if (isOpen) window.scrollTo(0, 0);
     }
 
     mobileInfoBtn.addEventListener('click', () => toggleInfoPanel());
