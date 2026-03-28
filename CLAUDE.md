@@ -91,11 +91,12 @@ knowledge-navigator-agent/          ← local folder name (repo is "bounty-bear"
 |---|---|
 | Demo | Pure HTML/CSS/JS — zero dependencies |
 | Game frontend | Next.js 16, TypeScript, Tailwind CSS |
-| Font | VT323 (via next/font/google) — retro terminal look |
+| Fonts | VT323 (terminal body) + Press Start 2P (logo) — via next/font/google |
 | Auth | Supabase email/password |
 | Database | Supabase PostgreSQL + PostGIS |
-| Realtime | Supabase Realtime (not yet wired) |
-| Audio | Web Audio API (cha-ching synth) + Web Speech API (bear voice) |
+| Realtime | Supabase Realtime (postgres_changes — live bounty board) |
+| Audio | Web Audio API (cha-ching + blip synth) + Web Speech API (bear voice) |
+| Map | Leaflet + react-leaflet (CartoDB dark tiles, SSR disabled) |
 | Hosting | Vercel |
 
 ---
@@ -103,28 +104,29 @@ knowledge-navigator-agent/          ← local folder name (repo is "bounty-bear"
 ## Game Mechanics (Implemented)
 
 - **Sign up / login** — email + password, Supabase auth
-- **Bounty board** — lists all active bounties with first clue visible
+- **Bounty board** — live via Supabase Realtime; new bounties slide in without reload
 - **Post bounty** — 3-step flow: location name + GPS + reward + difficulty → 3 clues → passcode
-  - GPS auto-detect OR manual lat/lng entry
-- **Claim bounty** — tap bounty → see all clues → enter passcode → cinematic bear sequence → cha-ching + voice → points awarded
+  - GPS auto-detect OR manual lat/lng entry; lat/lng stored in verification_data JSONB
+- **Claim bounty** — tap bounty → see clues (proximity-gated at 200m) → enter passcode → cinematic bear sequence in-layout → cha-ching + voice → points awarded
+- **Cinematic boot sequence** — "CLICK TO START" gates audio; bear intro monologue with scrolling terminal text + MP3 + speech synthesis (speakSequence with onend-based pauses)
 - **Points system** — 1000 starting balance, earn reward_points on successful claim
 - **Anti-self-claim** — can't claim your own bounty
+- **Profile page** — /profile shows hunter stats, claimed bounties, posted bounties
+- **Leaderboard page** — /leaderboard shows top 50 hunters by points, highlights current user
+- **Map view** — Leaflet map shows all bounties with GPS coords; tap to select and hunt
+- **Audio controls** — bear icon toggles voice mute; all audio stops when claim sequence begins
 
 ---
 
 ## Game Mechanics (Not Yet Built)
 
-From docs/GAME_DESIGN.md:
-- [ ] Leaderboard page
-- [ ] Proximity-based clue unlocking (currently all clues visible)
 - [ ] GPS verification on claim (currently just passcode)
 - [ ] Notifications (bounty claimed, new bounty nearby)
-- [ ] Hunt tracking (hunts table not yet used)
+- [ ] Hunt tracking (hunts table exists but unused)
 - [ ] Achievements system
-- [ ] Profile page
-- [ ] Map view (Mapbox planned)
-- [ ] QR code verification method
-- [ ] Photo verification method
+- [ ] Server-side passcode verification (currently client-side — fine for MVP)
+- [ ] QR code or photo verification method
+- [ ] Multi-stage waypoint bounties (cgeo-style chained clues)
 
 ---
 
@@ -181,24 +183,29 @@ From docs/GAME_DESIGN.md:
 - Bear container with state-based animations: ready (green pulse-ready), searching (amber pulse), found (green glow)
 - Bear status label updates live during claim sequence
 - Cinematic claim sequence stays INSIDE the layout — no fullscreen takeover
-  - Terminal column shows progress bar + animated terminal lines during claim
-  - Bear sidebar animates through searching → found states
-  - Info panel shows bounty details / passcode form when bounty selected, target locked info during sequence
-- Selected bounty highlighted amber in terminal list
-- COLLECT BOUNTY button appears in terminal after sequence completes
 - All CSS variables match demo exactly: --terminal-bg: #0d1117, --text: #e0e0e0, --border: #333, --amber: #ffb000
 - Mobile: bear+stats in compact horizontal row, info panel toggleable with 📋 button
 
-### Phase 4 — Next Up
-- Leaderboard page
-- Proximity-based clue unlocking (needs GPS polling during hunt)
-- Map view (Mapbox planned)
-- Notifications (bounty claimed, new bounty nearby)
-- Profile page
-- Supabase Realtime — live bounty board updates without page reload
-- Server-side passcode verification (currently client-side — fine for MVP)
-- Bounty expiry / time limits
-- Photo or QR code verification method
+### Phase 4 — Feature Drop (Shipped ✅)
+
+- **Boot sequence** — "CLICK TO START" button gates all audio; bear intro monologue scrolls line by line in terminal synced with speech
+- **speakSequence** — onend-callback-based speech with genuine inter-utterance pauses (fixes Chrome synthesis queue issue)
+- **MP3 playback** — im-searching.mp3 plays during boot intro, stops when claim begins
+- **Audio mute toggle** — bear icon in sidebar mutes/unmutes voice
+- **Supabase Realtime** — live bounty board via postgres_changes subscription; new bounties animate in
+- **Proximity clue unlocking** — clues locked behind 200m GPS radius (stored in verification_data JSONB, no migration needed)
+- **Map view** — Leaflet + CartoDB dark tiles; bear icons for each bounty, user location dot, "HUNT THIS" popup
+- **Leaderboard page** — /leaderboard, server-rendered, top 50 by points
+- **Profile page** — /profile, server-rendered, claimed + posted bounties
+- **Migration 002** — hunt_id nullable in claims, expanded bounties RLS for profile page
+
+### Phase 5 — Next Up
+
+- GPS verification on claim
+- Notifications
+- Server-side passcode verification
+- Multi-stage waypoint bounties
+- Achievements
 
 ---
 
