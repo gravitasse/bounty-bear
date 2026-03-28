@@ -188,7 +188,7 @@
         height: 100px !important; 
         font-size: 60px !important;
         outline-width: 3px !important;
-        margin: 10px auto !important;
+        margin: 10px auto 24px auto !important; /* Increased bottom margin for pulse */
         display: flex !important;
         justify-content: center !important;
         align-items: center !important;
@@ -295,11 +295,12 @@
         border: 2px solid var(--green) !important;
         padding: 16px !important; /* Restored padding */
         border-radius: 8px !important;
-        text-align: center;
+        text-align: center !important;
+        margin: 0 auto !important;
         animation: slideIn 0.3s forwards;
       }
-      .target-card .target-name { font-size: 1.8rem !important; font-weight: bold; color: var(--green); }
-      .target-card .target-location { font-size: 1.2rem !important; color: var(--text); }
+      .target-card .target-name { font-size: 1.8rem !important; font-weight: bold; color: var(--green); text-align: center !important; width: 100%; }
+      .target-card .target-location { font-size: 1.2rem !important; color: var(--text); text-align: center !important; width: 100%; }
 
       .stats-box {
         display: none !important; /* Hide stats on initial load/searching */
