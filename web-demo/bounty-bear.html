@@ -195,7 +195,12 @@
         gap: 0;
         align-items: center;
         text-align: center;
-        font-size: 0.95rem;
+        font-size: 1.1rem; /* Bumping label size significantly */
+        transition: font-size 0.3s;
+      }
+      .stat-value {
+        font-size: 1.35rem; /* Super-sizing the numeric result */
+        font-weight: bold;
         transition: font-size 0.3s;
       }
       .mobile-info-btn {
@@ -251,6 +256,9 @@
       }
       .mobile-compact .stats-box, .mobile-compact .stat-row {
         font-size: 0.85rem;
+      }
+      .mobile-compact .stat-value {
+        font-size: 1.05rem;
       }
       .mobile-compact .mobile-info-btn {
         font-size: 0.95rem;
