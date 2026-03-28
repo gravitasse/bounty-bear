@@ -108,12 +108,14 @@
       main {
         grid-template-columns: 1fr;
         grid-template-rows: 1fr;
+        overflow: hidden;
       }
       .sidebar, .info-panel {
-        display: none;
+        display: none !important;
       }
       .terminal {
         height: 100%;
+        max-height: 100%;
       }
     }
 
