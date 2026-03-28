@@ -28,22 +28,35 @@ export function playChaChing() {
   osc2.stop(audioCtx.currentTime + 0.5)
 }
 
-export function speakLine(text: string) {
+// Queued speech — does NOT cancel previous lines, lets them play in sequence like the demo
+export function speakQueued(text: string) {
   if (typeof window === 'undefined') return
   const synth = window.speechSynthesis
   if (!synth) return
-  synth.cancel()
+
   const utt = new SpeechSynthesisUtterance(text)
-  utt.rate = 0.85
-  utt.pitch = 0.7
-  utt.volume = 1
+  utt.rate = 1.0
+  utt.pitch = 0.8
+  utt.volume = 1.0
+
   const voices = synth.getVoices()
   const voice =
     voices.find(v => v.name.includes('Daniel')) ||
     voices.find(v => v.name.includes('Alex')) ||
+    voices.find(v => v.name.includes('Fred')) ||
     voices.find(v => v.name.includes('David')) ||
+    voices.find(v => v.name.includes('Mark')) ||
     voices.find(v => v.lang === 'en-US') ||
     voices[0]
   if (voice) utt.voice = voice
-  synth.speak(utt)
+
+  synth.speak(utt) // queues automatically — no cancel = no cutoff
+}
+
+// Play the im-searching MP3 in the background (same as demo)
+export function playImSearchingMp3() {
+  if (typeof window === 'undefined') return
+  const audio = new Audio('/demo/audio/im-searching.mp3')
+  audio.volume = 0.8
+  audio.play().catch(() => {}) // silently ignore autoplay blocks
 }
