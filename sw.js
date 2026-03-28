@@ -1,5 +1,5 @@
 // Bounty Bear Service Worker - Enables offline PWA support
-const CACHE_NAME = 'bounty-bear-v1';
+const CACHE_NAME = 'bounty-bear-v2';
 const urlsToCache = [
   '/web-demo/bounty-bear.html',
   '/web-demo/prophecy.html',
@@ -7,8 +7,9 @@ const urlsToCache = [
   '/manifest.json'
 ];
 
-// Install event - cache assets
+// Install event - cache assets and activate immediately
 self.addEventListener('install', event => {
+  self.skipWaiting(); // Activate new SW immediately
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -18,13 +19,19 @@ self.addEventListener('install', event => {
   );
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - NETWORK FIRST, fallback to cache for offline
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then(response => {
-        // Return cached version or fetch from network
-        return response || fetch(event.request);
+        // Update the cache with the fresh response
+        const responseClone = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseClone));
+        return response;
+      })
+      .catch(() => {
+        // Network failed - serve from cache (offline mode)
+        return caches.match(event.request);
       })
   );
 });
