@@ -172,23 +172,26 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
     addLine(`──────────────────────────────────────`, 'system')
     addLine(`VERIFYING BOUNTY: "${target.location_name.toUpperCase()}"`, 'system')
 
+    const searchingCount = Math.random() < 0.5 ? 2 : 3
+    const hasGiveMeAMinute = Math.random() < 0.6
+
     await sleep(1500)
     addLine(`SEARCHING.`)
     speakQueued('Searching.')
 
-    await sleep(2000)
-    addLine(`I'M SEARCHING.`)
-    speakQueued("I'm searching.")
+    for (let i = 0; i < searchingCount; i++) {
+      await sleep(2000 + Math.random() * 500)
+      addLine(`I'M SEARCHING.`)
+      speakQueued("I'm searching.")
+    }
 
-    await sleep(2000)
-    addLine(`I'M SEARCHING.`)
-    speakQueued("I'm searching.")
+    if (hasGiveMeAMinute) {
+      await sleep(2200 + Math.random() * 600)
+      addLine(`GIVE ME A MINUTE.`)
+      speakQueued('Give me a minute.')
+    }
 
-    await sleep(2500)
-    addLine(`GIVE ME A MINUTE.`)
-    speakQueued('Give me a minute.')
-
-    await sleep(2500)
+    await sleep(2000 + Math.random() * 500)
     addLine(`I AM IDENTIFYING...`)
     speakQueued('I am identifying.')
 
