@@ -186,9 +186,15 @@
         border-bottom: none;
         display: flex;
         flex-direction: row;
-        gap: 4px;
+        gap: 2px;
         align-items: center;
       }
+      .stat-row span:first-child {
+        display: none;
+      }
+      .stat-row:nth-child(1)::before { content: "🔍"; font-size: 0.7rem; }
+      .stat-row:nth-child(2)::before { content: "🎯"; font-size: 0.7rem; }
+      .stat-row:nth-child(3)::before { content: "💰"; font-size: 0.7rem; }
       .mobile-info-btn {
         display: block;
         background: none;
