@@ -107,11 +107,34 @@
     @media (max-width: 1024px) {
       main {
         grid-template-columns: 1fr;
-        grid-template-rows: 1fr;
+        grid-template-rows: auto 1fr;
         overflow: hidden;
       }
-      .sidebar, .info-panel {
+      .info-panel {
         display: none !important;
+      }
+      .sidebar {
+        flex-direction: row;
+        border-right: none;
+        border-bottom: 2px solid var(--green);
+        padding: 8px 16px;
+        gap: 12px;
+        overflow: visible;
+        min-height: auto;
+      }
+      .bear-container {
+        width: 60px;
+        height: 60px;
+        font-size: 36px;
+        border-width: 2px;
+        border-radius: 8px;
+      }
+      .bear-status {
+        font-size: 1.1rem;
+        letter-spacing: 1px;
+      }
+      .stats-box {
+        display: none;
       }
       .terminal {
         height: 100%;
