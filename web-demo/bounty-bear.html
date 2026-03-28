@@ -298,46 +298,74 @@
 
       /* Found / Compact State (Bear SMALL) */
       .mobile-compact .sidebar {
-        padding: 8px 12px;
-        margin: 4px 8px;
-        gap: 8px;
+        display: grid;
+        grid-template-areas: 
+          "bear status info"
+          "card card card"
+          "stats stats stats";
+        grid-template-columns: auto 1fr auto;
+        padding: 16px;
+        gap: 16px 12px;
+        margin: 8px;
         overflow: visible;
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid var(--green);
       }
-      .mobile-compact .bear-container {
-        width: 44px;
-        height: 44px;
-        font-size: 24px;
+      .mobile-compact .bear-container { 
+        grid-area: bear;
+        width: 48px;
+        height: 48px;
+        font-size: 26px;
         outline-width: 2px;
       }
-      .mobile-compact .bear-status {
+      .mobile-compact .bear-status { 
+        grid-area: status;
+        font-size: 1.1rem; 
+        justify-self: start;
+        align-self: center;
+        letter-spacing: 2px;
+        color: var(--green);
+        text-shadow: 0 0 10px var(--green);
+      }
+      .mobile-compact .mobile-info-btn { 
+        grid-area: info;
+        padding: 6px 14px;
         font-size: 0.95rem;
       }
-      .mobile-compact .target-card {
+      .mobile-compact .target-card { 
+        grid-area: card;
         display: flex;
-        flex-direction: row;
-        gap: 8px;
-        font-size: 0.75rem;
-        background: none;
-        border: none;
-        padding: 0;
+        flex-direction: column;
+        gap: 4px;
+        background: rgba(0, 255, 65, 0.1);
+        border: 1px solid var(--green);
+        padding: 10px 14px;
+        border-radius: 4px;
+        font-size: 0.9rem;
       }
-      .mobile-compact .target-label { display: none; }
-      .mobile-compact .target-name { font-size: 0.8rem; color: var(--amber); }
-      .mobile-compact .target-location { font-size: 0.7rem; opacity: 0.7; }
+      .mobile-compact .target-label { display: block; font-size: 0.65rem; color: var(--amber); margin-bottom: 2px; }
+      .mobile-compact .target-name { font-size: 1.2rem; color: var(--green); font-weight: bold; }
+      .mobile-compact .target-location { font-size: 0.9rem; opacity: 0.9; }
 
       .mobile-compact .stats-box {
-        padding: 1px 4px;
-        gap: 2px;
+        grid-area: stats;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        padding-top: 12px;
+        border-top: 1px solid var(--green-dim);
+        gap: 12px;
       }
-      .mobile-compact .stats-box, .mobile-compact .stat-row {
+      .mobile-compact .stat-row {
         font-size: 0.8rem;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        align-items: center;
       }
       .mobile-compact .stat-value {
         font-size: 1rem;
-      }
-      .mobile-compact .mobile-info-btn {
-        font-size: 0.85rem;
-        padding: 2px 8px;
+        color: var(--amber);
       }
       .terminal {
         flex: 1;
@@ -353,13 +381,24 @@
     }
     
     @keyframes pulse-ready {
-      0%, 100% { box-shadow: 0 0 8px var(--green-dim); outline-color: var(--green); }
-      50% { box-shadow: 0 0 20px 5px var(--green-dim); outline-color: var(--amber); }
+      0%, 100% { 
+        box-shadow: 0 0 10px var(--green); 
+        outline-color: var(--green);
+        outline-width: 2px;
+        transform: scale(1) translateZ(0);
+      }
+      50% { 
+        box-shadow: 0 0 35px 10px var(--green-dim); 
+        outline-color: var(--amber);
+        outline-width: 5px;
+        transform: scale(1.1) translateZ(0);
+      }
     }
     
     .bear-container.ready {
-      animation: pulse-ready 2s infinite ease-in-out;
+      animation: pulse-ready 1.5s infinite ease-in-out;
       cursor: pointer;
+      z-index: 1000;
     }
 
     /* Sidebar - Bear Avatar */
