@@ -130,6 +130,7 @@
         overflow: hidden;
         position: relative;
         max-height: calc(100vh - 20px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
       .info-panel {
         display: none;
@@ -154,16 +155,16 @@
         align-items: center;
         border-right: none;
         border-bottom: 1px solid var(--green);
-        padding: 4px 8px;
-        gap: 6px;
+        padding: 8px 12px;
+        gap: 8px;
         overflow: hidden;
         min-height: auto;
-        transition: padding 0.3s, gap 0.3s;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
       .bear-container {
-        width: 48px;
-        height: 48px;
-        font-size: 28px;
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
         border-width: 1px;
         border-radius: 4px;
         flex-shrink: 0;
@@ -237,32 +238,54 @@
       }
       .mobile-close-info:hover { background: rgba(255, 51, 51, 0.2); }
       
-      /* Active Search Compressed State */
+      /* Searching Active State (Bear BIG) */
+      .searching-active .sidebar {
+        flex-direction: column;
+        padding: 16px 8px;
+        gap: 12px;
+      }
+      .searching-active .bear-container {
+        width: 100px;
+        height: 100px;
+        font-size: 60px;
+        border-width: 3px;
+      }
+      .searching-active .bear-status {
+        font-size: 1.4rem;
+      }
+      .searching-active .stats-box {
+        display: none; /* Hide stats to give bear more room */
+      }
+      .searching-active .mobile-info-btn {
+        display: none;
+      }
+
+      /* Found / Compact State (Bear SMALL) */
       .mobile-compact .sidebar {
-        padding: 3px 6px;
-        gap: 5px;
+        padding: 2px 4px;
+        gap: 4px;
       }
       .mobile-compact .bear-container {
-        width: 38px;
-        height: 38px;
-        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
       }
       .mobile-compact .bear-status {
-        font-size: 0.75rem;
+        font-size: 0.65rem;
       }
       .mobile-compact .stats-box {
-        padding: 2px 4px;
-        gap: 3px;
+        padding: 1px 4px;
+        gap: 2px;
       }
       .mobile-compact .stats-box, .mobile-compact .stat-row {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
       }
       .mobile-compact .stat-value {
-        font-size: 1.05rem;
+        font-size: 1rem;
       }
       .mobile-compact .mobile-info-btn {
-        font-size: 0.95rem;
-        padding: 3px 10px;
+        font-size: 0.85rem;
+        padding: 2px 8px;
       }
       .terminal {
         flex: 1;
@@ -1089,17 +1112,7 @@
     const isMobile = () => window.innerWidth <= 1024;
     let forceCompact = false;
     
-    searchInput.addEventListener('focus', () => {
-      if (isMobile()) mainArea.classList.add('mobile-compact');
-    });
-    
-    searchInput.addEventListener('blur', () => {
-      // Small delay prevents jarring bounce if tapping around
-      setTimeout(() => { 
-        if (isMobile() && !forceCompact) mainArea.classList.remove('mobile-compact'); 
-      }, 300);
-    });
-
+    // Reset layout zoom on bear click
     bearContainer.addEventListener('click', () => {
       if (bearContainer.classList.contains('searching')) return;
       
@@ -1110,6 +1123,7 @@
       
       if (isMobile()) {
         mainArea.classList.remove('mobile-compact');
+        mainArea.classList.remove('searching-active');
         searchInput.blur();
       }
       
@@ -1150,7 +1164,10 @@
 
     async function performSearch(query) {
       forceCompact = true;
-      if (isMobile()) mainArea.classList.add('mobile-compact');
+      if (isMobile()) {
+        mainArea.classList.remove('mobile-compact');
+        mainArea.classList.add('searching-active');
+      }
       
       synth.cancel(); // Clear pending speech when starting new search
       
@@ -1212,6 +1229,11 @@
 
       await sleep(1200);
       setBearState('found');
+
+      if (isMobile()) {
+        mainArea.classList.remove('searching-active');
+        mainArea.classList.add('mobile-compact');
+      }
 
       addLine(`I GOT HIM!`, 'success');
       speak("I got him!");
