@@ -150,27 +150,34 @@
       }
       .sidebar {
         flex: 0 0 auto;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        border: 1px solid var(--green);
-        margin: 8px;
-        border-radius: 4px;
-        padding: 10px 16px;
-        gap: 12px;
-        min-height: auto;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        overflow: visible; /* Prevent glow clipping */
-        background: rgba(0, 0, 0, 0.3);
+        display: grid !important;
+        grid-template-columns: 100% !important;
+        gap: 16px !important;
+        padding: 20px 16px !important;
+        order: -1;
+        width: 100% !important;
+        box-sizing: border-box;
+        background: rgba(0, 0, 0, 0.4) !important;
+        border: 1px solid var(--green) !important;
+        border-radius: 8px !important;
+        margin: 0 0 16px 0 !important;
+        align-items: center !important;
+        justify-items: center !important;
       }
-      .bear-container {
-        width: 32px;
-        height: 32px;
-        font-size: 18px;
-        border-width: 1px;
-        border-radius: 4px;
-        flex-shrink: 0;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      .sidebar > * { 
+        width: 100% !important; 
+        max-width: 100% !important; 
+        margin: 0 !important;
+      }
+      .bear-container { 
+        width: 48px !important; 
+        height: 48px !important; 
+        font-size: 26px !important;
+        outline-width: 2px !important;
+        margin: 0 auto !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
       }
       .bear-status {
         font-size: 0.8rem;
@@ -207,17 +214,19 @@
         transition: font-size 0.3s;
       }
       .mobile-info-btn {
-        display: block;
-        background: none;
-        border: 1px solid var(--amber);
-        color: var(--amber);
+        display: block !important;
+        width: 100% !important;
+        background: rgba(255, 176, 0, 0.1) !important;
+        border: 2px solid var(--amber) !important;
+        color: var(--amber) !important;
         font-family: 'VT323', monospace;
-        font-size: 1.1rem;
-        padding: 4px 12px;
+        font-size: 1.25rem !important;
+        font-weight: bold !important;
+        padding: 12px !important;
         cursor: pointer;
-        border-radius: 4px;
-        flex-shrink: 0;
-        transition: all 0.3s;
+        border-radius: 8px !important;
+        margin-top: 8px !important;
+        text-align: center;
       }
       .mobile-info-btn:hover { background: rgba(255, 176, 0, 0.15); }
       .mobile-info-btn.active {
@@ -240,129 +249,47 @@
       }
       .mobile-close-info:hover { background: rgba(255, 51, 51, 0.2); }
       
-      /* Searching Active State (Bear BIG) */
-      .searching-active .sidebar {
-        flex-direction: column;
-        padding: 16px 8px;
-        gap: 12px;
-      }
+      /* State-Dependent Scale Overrides */
       .searching-active .bear-container {
-        width: 100px;
-        height: 100px;
-        font-size: 60px;
-        outline-width: 3px;
+        width: 100px !important;
+        height: 100px !important;
+        font-size: 60px !important;
+        outline-width: 3px !important;
       }
       .searching-active .bear-status {
-        font-size: 1.4rem;
+        font-size: 1.6rem !important;
+        letter-spacing: 4px;
+        text-align: center;
       }
-      .searching-active .stats-box, .searching-active .mobile-info-btn {
-        display: none;
+      .searching-active .stats-box, .searching-active .target-card, .searching-active .mobile-info-btn {
+        display: none !important;
       }
 
-      /* Target Found State (Bear + Result BIG) */
-      .target-found .sidebar {
-        flex-direction: column;
-        padding: 12px 8px;
-        gap: 8px;
-      }
-      .target-found .bear-container {
-        width: 64px;
-        height: 64px;
-        font-size: 36px;
-      }
+      .target-found .bear-container { width: 80px !important; height: 80px !important; }
+      .target-found .bear-status { font-size: 1.4rem !important; text-align: center; margin-bottom: 0; }
       .target-found .target-card {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        width: 100%;
-        background: var(--green-dim);
-        border: 1px solid var(--green);
-        padding: 8px;
-        border-radius: 4px;
+        display: block !important;
+        background: rgba(0, 255, 65, 0.15) !important;
+        border: 2px solid var(--green) !important;
+        padding: 16px !important;
+        border-radius: 8px !important;
+        text-align: center;
         animation: slideIn 0.3s forwards;
       }
-      .target-card .target-label {
-        font-size: 0.6rem;
-        color: var(--amber);
-        margin-bottom: 2px;
-      }
-      .target-card .target-name {
-        font-size: 1.4rem;
-        font-weight: bold;
-        color: var(--green);
-      }
-      .target-card .target-location {
-        font-size: 0.9rem;
-        color: var(--text);
-      }
+      .target-card .target-name { font-size: 1.8rem !important; font-weight: bold; color: var(--green); }
+      .target-card .target-location { font-size: 1.2rem !important; color: var(--text); }
 
-      /* Found / Compact State (Bear SMALL) */
-      .mobile-compact .sidebar {
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-        padding: 16px 20px;
-        gap: 16px;
-        margin: 8px;
-        overflow: visible;
-        background: rgba(0, 0, 0, 0.4);
-        border: 1px solid var(--green);
+      .stats-box {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-around !important;
+        width: 100% !important;
+        padding: 12px 0 !important;
+        border-top: 1px solid var(--green-dim) !important;
+        background: none !important;
       }
-      .mobile-compact .bear-container { 
-        width: 48px;
-        height: 48px;
-        font-size: 26px;
-        outline-width: 2px;
-        align-self: center;
-      }
-      .mobile-compact .bear-status { 
-        font-size: 1.1rem; 
-        text-align: center;
-        letter-spacing: 2px;
-        color: var(--green);
-        text-shadow: 0 0 10px var(--green);
-      }
-      .mobile-compact .mobile-info-btn { 
-        padding: 8px;
-        font-size: 0.95rem;
-        width: 100%;
-      }
-      .mobile-compact .target-card { 
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        background: rgba(0, 255, 65, 0.15);
-        border: 1px solid var(--green);
-        padding: 12px;
-        border-radius: 4px;
-        width: 100%;
-        text-align: center;
-      }
-      .mobile-compact .target-label { display: block; font-size: 0.7rem; color: var(--amber); margin-bottom: 2px; }
-      .mobile-compact .target-name { font-size: 1.4rem; color: var(--green); font-weight: bold; }
-      .mobile-compact .target-location { font-size: 1rem; opacity: 1; color: var(--text); }
-
-      .mobile-compact .stats-box {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-around;
-        padding: 8px 0;
-        border-bottom: 1px solid var(--green-dim);
-        gap: 12px;
-        width: 100%;
-      }
-      .mobile-compact .stat-row {
-        font-size: 0.8rem;
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        align-items: center;
-        text-align: center;
-      }
-      .mobile-compact .stat-value {
-        font-size: 1.1rem;
-        color: var(--amber);
-      }
+      .mobile-compact .bear-status { font-size: 1.1rem; text-align: center; }
+      .mobile-compact .target-card { display: block !important; }
       .terminal {
         flex: 1;
         height: auto;
@@ -882,6 +809,7 @@
           <span>BOUNTIES</span>
           <span class="stat-value" id="bountyTotal">$0</span>
         </div>
+      </div> <!-- End stats-box -->
       <div class="target-card" id="targetCard">
         <div class="target-label">POSITIVE ID:</div>
         <div class="target-name" id="lastTargetName">---</div>
