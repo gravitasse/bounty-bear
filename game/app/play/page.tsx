@@ -10,11 +10,23 @@ export default async function PlayPage() {
 
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
+  // Ensure profile exists — create it if missing (handles cases where trigger didn't fire)
+  let { data: profile } = await supabase
     .from('users')
     .select('username, points, reputation_level')
     .eq('id', user.id)
     .single()
+
+  if (!profile) {
+    const username = user.email ? user.email.split('@')[0] : `hunter_${user.id.slice(0, 6)}`
+    await supabase.from('users').upsert({
+      id: user.id,
+      email: user.email,
+      username,
+      display_name: username,
+    })
+    profile = { username, points: 1000, reputation_level: 1 }
+  }
 
   const { data: bounties } = await supabase
     .from('bounties')
