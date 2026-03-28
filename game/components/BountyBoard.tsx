@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { initAudio, playChaChing, speakQueued, playImSearchingMp3, playBlip } from '@/lib/audio'
+import { initAudio, playChaChing, speakQueued, playImSearchingMp3, playBlip, setVoiceMuted, getVoiceMuted } from '@/lib/audio'
 import CreateBountyModal from './CreateBountyModal'
 import BountyDetail from './BountyDetail'
 import LeaderboardModal from './LeaderboardModal'
@@ -81,18 +81,27 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
   const [findersFee, setFindersFee] = useState(0)
 
   const outputRef = useRef<HTMLDivElement>(null)
-  const audioActivated = useRef(false)
+  const audioActivatedRef = useRef(false)
+  const [audioActivated, setAudioActivated] = useState(false)
+  const [voiceMuted, setVoiceMutedState] = useState(false)
   const datetime = useDateTime()
 
   // Speak intro on first interaction — audio context requires a user gesture
   function activateAudio() {
-    if (audioActivated.current) return
-    audioActivated.current = true
+    if (audioActivatedRef.current) return
+    audioActivatedRef.current = true
+    setAudioActivated(true)
     initAudio()
     speakQueued("I'm the Bear. The Bounty Bear.")
     speakQueued("I find them here. I find them there.")
     speakQueued("I can find them anywhere.")
     speakQueued("The Bear. Advanced Bounty Bear programming.")
+  }
+
+  function toggleVoice() {
+    const next = !voiceMuted
+    setVoiceMutedState(next)
+    setVoiceMuted(next)
   }
 
   // Auto-scroll terminal
@@ -430,7 +439,10 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
           </div>
 
           {!showingSequence && (
-            <div className="terminal-input-area">
+            <div className="terminal-input-area" style={{ position: 'relative' }}>
+              {!audioActivated && (
+                <div className="click-hint">👆 CLICK TO ACTIVATE VOICE</div>
+              )}
               <button className="action-btn primary" onClick={() => { activateAudio(); setShowCreate(true) }}>
                 ► POST BOUNTY
               </button>
@@ -439,6 +451,14 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
               </button>
               <button className="action-btn" onClick={() => { activateAudio(); setShowMap(true) }}>
                 🗺️ MAP
+              </button>
+              <button
+                className={`voice-btn ${audioActivated ? (voiceMuted ? 'muted' : 'active') : ''}`}
+                onClick={() => { activateAudio(); toggleVoice() }}
+                title={voiceMuted ? 'Unmute voice' : 'Mute voice'}
+                style={{ marginLeft: 'auto' }}
+              >
+                {voiceMuted ? '🔇' : '🔊'}
               </button>
             </div>
           )}

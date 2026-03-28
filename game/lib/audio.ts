@@ -1,6 +1,14 @@
 let audioCtx: AudioContext | null = null
 let bearVoice: SpeechSynthesisVoice | null = null
 let voicesLoaded = false
+let voiceMuted = false
+
+export function setVoiceMuted(muted: boolean) {
+  voiceMuted = muted
+  if (muted && typeof window !== 'undefined') window.speechSynthesis.cancel()
+}
+
+export function getVoiceMuted() { return voiceMuted }
 
 // Pre-load voices as soon as possible (async in most browsers)
 if (typeof window !== 'undefined') {
@@ -70,6 +78,8 @@ export function speakQueued(text: string) {
   if (typeof window === 'undefined') return
   const synth = window.speechSynthesis
   if (!synth) return
+
+  if (voiceMuted) return
 
   const utt = new SpeechSynthesisUtterance(text)
   utt.rate = 1.0

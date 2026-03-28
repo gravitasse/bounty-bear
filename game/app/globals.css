@@ -363,6 +363,58 @@ main {
   51%, 100% { opacity: 0; }
 }
 
+/* Click hint */
+.click-hint {
+  position: absolute;
+  top: -44px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--amber);
+  color: var(--bg);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  animation: bounce-hint 1s ease-in-out infinite;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 200;
+}
+
+.click-hint::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid var(--amber);
+}
+
+@keyframes bounce-hint {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-5px); }
+}
+
+/* Voice button */
+.voice-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--green);
+  font-family: 'VT323', monospace;
+  font-size: 1.3rem;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-radius: 0;
+  flex-shrink: 0;
+}
+
+.voice-btn:hover { background: rgba(0,255,65,0.1); border-color: var(--green); }
+.voice-btn.active { border-color: var(--green); color: var(--green); }
+.voice-btn.muted { border-color: var(--border); color: var(--border); opacity: 0.5; }
+
 /* Leaflet popup overrides */
 .bear-popup .leaflet-popup-content-wrapper {
   background: var(--terminal-bg);
