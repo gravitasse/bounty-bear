@@ -236,7 +236,9 @@ Type your target name, hit Enter, and the retro UI will dynamically narrate Open
 
 ## Key Features
 
-- **Dynamic Mobile Flow**: Bear icon scales up to 100px during search, then auto-shrinks to 44px to reveal a persistent 'Positive ID' badge once found.
+- **Dynamic Mobile Flow**: Bear icon scales up to 100px during search, then condenses to 64px when target is found, maximizing terminal scroll space.
+- **Condensed Result Card**: Compact "Positive ID" badge with tight spacing reclaims ~80px vertical space for terminal output on mobile.
+- **Pixel-Perfect Alignment**: Consistent 16px horizontal padding across all sections with baseline-aligned search input for clean text flow.
 - **Pulsing Ready State**: A rhythmic green/amber glow appears on the Bear icon when search is complete, signaling it's ready for a manual reset.
 - **Manual Layout Reset**: Clicking the Bear icon restores the full-sized layout while preserving terminal scroll history.
 - **Universal Compatibility**: Zero-dependency Flexbox architecture ensures 100% stability on iOS Safari and modern mobile browsers.
