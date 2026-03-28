@@ -1,5 +1,5 @@
 // Bounty Bear Service Worker - Enables offline PWA support
-const CACHE_NAME = 'bounty-bear-v2';
+const CACHE_NAME = 'bounty-bear-v3';
 const urlsToCache = [
   '/web-demo/bounty-bear.html',
   '/web-demo/prophecy.html',
