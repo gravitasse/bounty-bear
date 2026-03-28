@@ -484,6 +484,119 @@
       transition: all 0.2s;
     }
     .clear-log-btn:hover { background: rgba(255, 51, 51, 0.15); }
+
+    /* ═══════════════════════════════════════════════════════════════ */
+    /* MOBILE RESPONSIVE — phones only, does NOT affect desktop      */
+    /* ═══════════════════════════════════════════════════════════════ */
+
+    /* Tablets and small laptops */
+    @media (max-width: 768px) {
+      header {
+        padding: 10px 16px;
+      }
+      .logo {
+        font-size: 0.75rem;
+        gap: 8px;
+      }
+      .logo-bear {
+        font-size: 1.5rem;
+      }
+      .system-status {
+        font-size: 1rem;
+      }
+    }
+
+    /* Phones */
+    @media (max-width: 600px) {
+      header {
+        padding: 8px 12px;
+      }
+      .logo {
+        font-size: 0.6rem;
+        gap: 6px;
+      }
+      .logo span:not(.logo-bear) {
+        /* Shorten the title on very small screens */
+        font-size: 0.55rem;
+      }
+      .logo-bear {
+        font-size: 1.3rem;
+      }
+      .system-status {
+        font-size: 0.85rem;
+      }
+
+      main {
+        max-height: calc(100vh - 50px);
+      }
+
+      .terminal-header {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+      }
+
+      .terminal-output {
+        padding: 12px;
+        font-size: 1.15rem;
+        line-height: 1.6;
+      }
+
+      .terminal-line .money {
+        font-size: 1.3rem;
+      }
+
+      .terminal-line.highlight {
+        padding: 6px 8px;
+        margin: 8px 0;
+      }
+
+      .terminal-input-area {
+        padding: 10px 12px;
+        gap: 8px;
+      }
+
+      .prompt {
+        font-size: 1.15rem;
+      }
+
+      .terminal-input {
+        font-size: 1.15rem;
+      }
+
+      .voice-btn {
+        padding: 8px 12px;
+        font-size: 1rem;
+      }
+
+      .click-hint {
+        font-size: 0.9rem;
+        padding: 6px 12px;
+        top: -35px;
+      }
+
+      .progress-bar {
+        height: 14px;
+      }
+
+      /* Result cards */
+      .result {
+        font-size: 1rem;
+      }
+    }
+
+    /* Extra small phones (iPhone SE etc.) */
+    @media (max-width: 375px) {
+      .logo span:not(.logo-bear) {
+        font-size: 0.45rem;
+      }
+      .terminal-output {
+        padding: 8px;
+        font-size: 1.05rem;
+      }
+      .terminal-input-area {
+        padding: 8px;
+      }
+    }
   </style>
 </head>
 <body>
