@@ -34,3 +34,4 @@ coverage/
 tmp/
 temp/
 .vercel
+game/.env.local

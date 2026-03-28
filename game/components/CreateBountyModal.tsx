@@ -20,6 +20,9 @@ export default function CreateBountyModal({ userId, onClose }: { userId: string;
   const [loading, setLoading] = useState(false)
   const [gettingLocation, setGettingLocation] = useState(false)
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
+  const [manualLat, setManualLat] = useState('')
+  const [manualLng, setManualLng] = useState('')
+  const [showManual, setShowManual] = useState(false)
   const [error, setError] = useState('')
 
   async function getLocation() {
@@ -28,12 +31,24 @@ export default function CreateBountyModal({ userId, onClose }: { userId: string;
       pos => {
         setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude })
         setGettingLocation(false)
+        setError('')
       },
       () => {
-        setError('Location access denied.')
         setGettingLocation(false)
+        setShowManual(true)
+        setError('GPS denied — enter coordinates manually.')
       }
     )
+  }
+
+  function applyManualCoords() {
+    const lat = parseFloat(manualLat)
+    const lng = parseFloat(manualLng)
+    if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      return setError('Invalid coordinates.')
+    }
+    setCoords({ lat, lng })
+    setError('')
   }
 
   async function handleSubmit() {
@@ -112,15 +127,52 @@ export default function CreateBountyModal({ userId, onClose }: { userId: string;
               {coords ? (
                 <div className="text-green-400 text-xs border border-green-800 p-2">
                   ✓ {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
+                  <button onClick={() => setCoords(null)} className="ml-2 text-green-700 hover:text-green-500">change</button>
                 </div>
               ) : (
-                <button
-                  onClick={getLocation}
-                  disabled={gettingLocation}
-                  className="w-full border border-green-700 text-green-600 py-2 hover:bg-green-900 transition-colors text-xs uppercase tracking-widest disabled:opacity-50"
-                >
-                  {gettingLocation ? 'ACQUIRING...' : '► GET MY LOCATION'}
-                </button>
+                <div className="space-y-2">
+                  <button
+                    onClick={getLocation}
+                    disabled={gettingLocation}
+                    className="w-full border border-green-700 text-green-600 py-2 hover:bg-green-900 transition-colors text-xs uppercase tracking-widest disabled:opacity-50"
+                  >
+                    {gettingLocation ? 'ACQUIRING...' : '► GET MY LOCATION'}
+                  </button>
+                  {showManual && (
+                    <div className="space-y-2">
+                      <div className="text-green-700 text-xs text-center">— or enter manually —</div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="number"
+                          step="any"
+                          value={manualLat}
+                          onChange={e => setManualLat(e.target.value)}
+                          placeholder="Latitude"
+                          className="bg-black border border-green-800 text-green-300 p-2 text-xs focus:outline-none focus:border-green-600 placeholder-green-900"
+                        />
+                        <input
+                          type="number"
+                          step="any"
+                          value={manualLng}
+                          onChange={e => setManualLng(e.target.value)}
+                          placeholder="Longitude"
+                          className="bg-black border border-green-800 text-green-300 p-2 text-xs focus:outline-none focus:border-green-600 placeholder-green-900"
+                        />
+                      </div>
+                      <button
+                        onClick={applyManualCoords}
+                        className="w-full border border-green-700 text-green-600 py-2 hover:bg-green-900 transition-colors text-xs uppercase tracking-widest"
+                      >
+                        ► SET LOCATION
+                      </button>
+                    </div>
+                  )}
+                  {!showManual && (
+                    <button onClick={() => setShowManual(true)} className="w-full text-green-800 text-xs hover:text-green-600 uppercase tracking-widest">
+                      enter coordinates manually
+                    </button>
+                  )}
+                </div>
               )}
             </div>
             <button
