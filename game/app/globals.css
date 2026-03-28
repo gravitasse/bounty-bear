@@ -376,9 +376,11 @@ main {
   font-size: 1.1rem;
   font-weight: bold;
   animation: bounce-hint 1s ease-in-out infinite;
-  pointer-events: none;
   white-space: nowrap;
   z-index: 200;
+  border: none;
+  cursor: pointer;
+  font-family: 'VT323', monospace;
 }
 
 .click-hint::after {

@@ -86,25 +86,17 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
   const [voiceMuted, setVoiceMutedState] = useState(false)
   const datetime = useDateTime()
 
-  // Speak intro on mount — TTS doesn't need a user gesture on most browsers.
-  // AudioContext (cha-ching, blip) still needs a gesture, handled by activateAudio().
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const delay = setTimeout(() => {
-      speakQueued("I'm the Bear. The Bounty Bear.")
-      speakQueued("I find them here. I find them there.")
-      speakQueued("I can find them anywhere.")
-      speakQueued("The Bear. Advanced Bounty Bear programming.")
-    }, 600) // slight delay so page renders first
-    return () => clearTimeout(delay)
-  }, [])
-
-  // activateAudio — unlocks AudioContext on first user gesture (needed for cha-ching / blip)
+  // activateAudio — must be called from a user gesture (Chrome blocks both
+  // AudioContext AND speechSynthesis without one)
   function activateAudio() {
     if (audioActivatedRef.current) return
     audioActivatedRef.current = true
     setAudioActivated(true)
     initAudio()
+    speakQueued("I'm the Bear. The Bounty Bear.")
+    speakQueued("I find them here. I find them there.")
+    speakQueued("I can find them anywhere.")
+    speakQueued("The Bear. Advanced Bounty Bear programming.")
   }
 
   function toggleVoice() {
@@ -452,7 +444,9 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
           {!showingSequence && (
             <div className="terminal-input-area" style={{ position: 'relative' }}>
               {!audioActivated && (
-                <div className="click-hint">👆 CLICK TO ACTIVATE VOICE</div>
+                <button className="click-hint" onClick={activateAudio}>
+                  👆 CLICK TO ACTIVATE VOICE
+                </button>
               )}
               <button className="action-btn primary" onClick={() => { activateAudio(); setShowCreate(true) }}>
                 ► POST BOUNTY
