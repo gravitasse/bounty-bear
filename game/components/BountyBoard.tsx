@@ -71,7 +71,7 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
   const [claimed, setClaimed] = useState(0)
   const [infoOpen, setInfoOpen] = useState(false)
 
-  // Terminal / sequence state
+  // Claim sequence state
   const [terminalLines, setTerminalLines] = useState<TerminalLine[]>([])
   const [bearState, setBearState] = useState<BearState>('ready')
   const [bearStatusLabel, setBearStatusLabel] = useState('READY')
@@ -80,14 +80,52 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
   const [claimError, setClaimError] = useState('')
   const [findersFee, setFindersFee] = useState(0)
 
+  // Boot intro state
+  const [introLines, setIntroLines] = useState<TerminalLine[]>([])
+  const [introComplete, setIntroComplete] = useState(false)
+
   const outputRef = useRef<HTMLDivElement>(null)
   const audioActivatedRef = useRef(false)
   const [audioActivated, setAudioActivated] = useState(false)
   const [voiceMuted, setVoiceMutedState] = useState(false)
   const datetime = useDateTime()
 
-  // activateAudio — must be called from a user gesture (Chrome blocks both
-  // AudioContext AND speechSynthesis without one)
+  // Boot sequence — runs automatically on mount, visual only, no gesture needed
+  useEffect(() => {
+    const addIntro = (text: string, type: TerminalLine['type'] = 'normal') =>
+      setIntroLines(prev => [...prev, { text, type }])
+
+    async function boot() {
+      await sleep(250)
+      addIntro('BOUNTY BEAR TRACKING SYSTEM v1.991', 'system')
+      await sleep(350)
+      addIntro('INSPIRED BY "UNTIL THE END OF THE WORLD" (1991)', 'system')
+      await sleep(400)
+      addIntro('──────────────────────────────────────')
+      await sleep(600)
+      addIntro("I'M THE BEAR. THE BOUNTY BEAR.")
+      await sleep(900)
+      addIntro("I FIND THEM HERE. I FIND THEM THERE.")
+      await sleep(800)
+      addIntro("I CAN FIND THEM ANYWHERE.")
+      await sleep(700)
+      addIntro("THE BEAR — ADVANCED BOUNTY BEAR PROGRAMMING.")
+      await sleep(500)
+      addIntro('──────────────────────────────────────')
+      await sleep(600)
+      setIntroComplete(true)
+    }
+
+    boot()
+  }, [])
+
+  // Auto-scroll terminal whenever intro lines or claim lines change
+  useEffect(() => {
+    if (outputRef.current) outputRef.current.scrollTop = outputRef.current.scrollHeight
+  }, [introLines, terminalLines])
+
+  // activateAudio — must be triggered by a user gesture (Chrome blocks both
+  // AudioContext AND speechSynthesis.speak() without one)
   function activateAudio() {
     if (audioActivatedRef.current) return
     audioActivatedRef.current = true
@@ -104,11 +142,6 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
     setVoiceMutedState(next)
     setVoiceMuted(next)
   }
-
-  // Auto-scroll terminal
-  useEffect(() => {
-    if (outputRef.current) outputRef.current.scrollTop = outputRef.current.scrollHeight
-  }, [terminalLines])
 
   // Open info panel when bounty selected
   useEffect(() => {
@@ -388,20 +421,28 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
               </>
             ) : (
               <>
-                <div className="terminal-line system">BOUNTY BEAR TRACKING SYSTEM v1.991</div>
-                <div className="terminal-line">──────────────────────────────────────</div>
-                <div className="terminal-line">I'M THE BEAR. THE BOUNTY BEAR.</div>
-                <div className="terminal-line">I FIND THEM HERE. I FIND THEM THERE.</div>
-                <div className="terminal-line">I CAN FIND THEM ANYWHERE.</div>
-                <div className="terminal-line system">THE BEAR — ADVANCED BOUNTY BEAR PROGRAMMING.</div>
-                <div className="terminal-line">──────────────────────────────────────</div>
+                {/* Boot intro lines — appear one by one automatically */}
+                {introLines.map((line, i) => (
+                  <div key={`intro-${i}`} className={`terminal-line ${line.type}`}>
+                    {line.text}
+                  </div>
+                ))}
 
-                {bounties.length === 0 ? (
+                {/* Bounty board — appears after intro completes */}
+                {!introComplete && (
+                  <div className="terminal-line system" style={{ color: 'var(--amber)' }}>
+                    <span className="cursor" />
+                  </div>
+                )}
+
+                {introComplete && bounties.length === 0 && (
                   <>
                     <div className="terminal-line">NO ACTIVE BOUNTIES DETECTED.</div>
                     <div className="terminal-line system">POST A BOUNTY TO BEGIN THE HUNT.</div>
                   </>
-                ) : (
+                )}
+
+                {introComplete && bounties.length > 0 && (
                   <>
                     <div className="terminal-line system">
                       {bounties.length} ACTIVE {bounties.length === 1 ? 'BOUNTY' : 'BOUNTIES'} AVAILABLE:
