@@ -81,35 +81,50 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
   const [findersFee, setFindersFee] = useState(0)
 
   // Boot intro state
+  const [started, setStarted] = useState(false)
   const [introLines, setIntroLines] = useState<TerminalLine[]>([])
   const [introComplete, setIntroComplete] = useState(false)
 
   const outputRef = useRef<HTMLDivElement>(null)
-  const audioActivatedRef = useRef(false)
-  const [audioActivated, setAudioActivated] = useState(false)
   const [voiceMuted, setVoiceMutedState] = useState(false)
   const datetime = useDateTime()
 
-  // Boot sequence — runs automatically on mount, visual only, no gesture needed
+  // Auto-scroll terminal whenever lines change
   useEffect(() => {
+    if (outputRef.current) outputRef.current.scrollTop = outputRef.current.scrollHeight
+  }, [introLines, terminalLines])
+
+  // Single entry point — user clicks once, everything starts together
+  function handleStart() {
+    if (started) return
+    setStarted(true)
+    initAudio()
+    runBoot()
+  }
+
+  function runBoot() {
     const addIntro = (text: string, type: TerminalLine['type'] = 'normal') =>
       setIntroLines(prev => [...prev, { text, type }])
 
     async function boot() {
-      await sleep(250)
+      await sleep(200)
       addIntro('BOUNTY BEAR TRACKING SYSTEM v1.991', 'system')
-      await sleep(350)
-      addIntro('INSPIRED BY "UNTIL THE END OF THE WORLD" (1991)', 'system')
+      speakQueued("I'm the Bear. The Bounty Bear.")
       await sleep(400)
+      addIntro('INSPIRED BY "UNTIL THE END OF THE WORLD" (1991)', 'system')
+      await sleep(500)
       addIntro('──────────────────────────────────────')
-      await sleep(600)
+      await sleep(500)
       addIntro("I'M THE BEAR. THE BOUNTY BEAR.")
       await sleep(900)
       addIntro("I FIND THEM HERE. I FIND THEM THERE.")
+      speakQueued("I find them here. I find them there.")
       await sleep(800)
       addIntro("I CAN FIND THEM ANYWHERE.")
+      speakQueued("I can find them anywhere.")
       await sleep(700)
       addIntro("THE BEAR — ADVANCED BOUNTY BEAR PROGRAMMING.")
+      speakQueued("The Bear. Advanced Bounty Bear programming.")
       await sleep(500)
       addIntro('──────────────────────────────────────')
       await sleep(600)
@@ -117,30 +132,17 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
     }
 
     boot()
-  }, [])
-
-  // Auto-scroll terminal whenever intro lines or claim lines change
-  useEffect(() => {
-    if (outputRef.current) outputRef.current.scrollTop = outputRef.current.scrollHeight
-  }, [introLines, terminalLines])
-
-  // activateAudio — must be triggered by a user gesture (Chrome blocks both
-  // AudioContext AND speechSynthesis.speak() without one)
-  function activateAudio() {
-    if (audioActivatedRef.current) return
-    audioActivatedRef.current = true
-    setAudioActivated(true)
-    initAudio()
-    speakQueued("I'm the Bear. The Bounty Bear.")
-    speakQueued("I find them here. I find them there.")
-    speakQueued("I can find them anywhere.")
-    speakQueued("The Bear. Advanced Bounty Bear programming.")
   }
 
   function toggleVoice() {
     const next = !voiceMuted
     setVoiceMutedState(next)
     setVoiceMuted(next)
+  }
+
+  // activateAudio is now just used to init audio on claim (already started by then)
+  function activateAudio() {
+    initAudio()
   }
 
   // Open info panel when bounty selected
@@ -421,17 +423,39 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
               </>
             ) : (
               <>
-                {/* Boot intro lines — appear one by one automatically */}
-                {introLines.map((line, i) => (
+                {/* Pre-start: click to begin */}
+                {!started && (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, minHeight: 200 }}>
+                    <button
+                      onClick={handleStart}
+                      style={{
+                        background: 'none',
+                        border: '2px solid var(--amber)',
+                        color: 'var(--amber)',
+                        fontFamily: 'inherit',
+                        fontSize: '1.6rem',
+                        padding: '16px 40px',
+                        cursor: 'pointer',
+                        letterSpacing: 4,
+                        animation: 'pulse-amber 1.5s ease-in-out infinite',
+                      }}
+                    >
+                      ► CLICK TO START
+                    </button>
+                  </div>
+                )}
+
+                {/* Boot intro lines — appear one by one after start */}
+                {started && introLines.map((line, i) => (
                   <div key={`intro-${i}`} className={`terminal-line ${line.type}`}>
                     {line.text}
                   </div>
                 ))}
 
-                {/* Bounty board — appears after intro completes */}
-                {!introComplete && (
-                  <div className="terminal-line system" style={{ color: 'var(--amber)' }}>
-                    <span className="cursor" />
+                {/* Blinking cursor while booting */}
+                {started && !introComplete && (
+                  <div className="terminal-line" style={{ color: 'var(--amber)' }}>
+                    <span className="cursor" style={{ background: 'var(--amber)' }} />
                   </div>
                 )}
 
@@ -482,25 +506,20 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
             )}
           </div>
 
-          {!showingSequence && (
-            <div className="terminal-input-area" style={{ position: 'relative' }}>
-              {!audioActivated && (
-                <button className="click-hint" onClick={activateAudio}>
-                  👆 CLICK TO ACTIVATE VOICE
-                </button>
-              )}
-              <button className="action-btn primary" onClick={() => { activateAudio(); setShowCreate(true) }}>
+          {!showingSequence && started && (
+            <div className="terminal-input-area">
+              <button className="action-btn primary" onClick={() => setShowCreate(true)}>
                 ► POST BOUNTY
               </button>
-              <button className="action-btn" onClick={() => { activateAudio(); setShowLeaderboard(true) }}>
+              <button className="action-btn" onClick={() => setShowLeaderboard(true)}>
                 🏆 LEADERBOARD
               </button>
-              <button className="action-btn" onClick={() => { activateAudio(); setShowMap(true) }}>
+              <button className="action-btn" onClick={() => setShowMap(true)}>
                 🗺️ MAP
               </button>
               <button
-                className={`voice-btn ${audioActivated ? (voiceMuted ? 'muted' : 'active') : ''}`}
-                onClick={() => { activateAudio(); toggleVoice() }}
+                className={`voice-btn ${voiceMuted ? 'muted' : 'active'}`}
+                onClick={toggleVoice}
                 title={voiceMuted ? 'Unmute voice' : 'Mute voice'}
                 style={{ marginLeft: 'auto' }}
               >

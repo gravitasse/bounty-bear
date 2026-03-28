@@ -399,6 +399,11 @@ main {
   50% { transform: translateX(-50%) translateY(-5px); }
 }
 
+@keyframes pulse-amber {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,176,0,0); border-color: var(--amber); }
+  50% { box-shadow: 0 0 20px 4px rgba(255,176,0,0.3); border-color: #ffd050; }
+}
+
 /* Voice button */
 .voice-btn {
   background: transparent;
