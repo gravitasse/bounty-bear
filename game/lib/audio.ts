@@ -1,8 +1,45 @@
 let audioCtx: AudioContext | null = null
+let bearVoice: SpeechSynthesisVoice | null = null
+let voicesLoaded = false
+
+// Pre-load voices as soon as possible (async in most browsers)
+if (typeof window !== 'undefined') {
+  const loadVoices = () => {
+    const voices = window.speechSynthesis.getVoices()
+    if (voices.length === 0) return
+    bearVoice =
+      voices.find(v => v.name.includes('Daniel')) ||
+      voices.find(v => v.name.includes('Alex')) ||
+      voices.find(v => v.name.includes('Fred')) ||
+      voices.find(v => v.name.includes('David')) ||
+      voices.find(v => v.name.includes('Mark')) ||
+      voices.find(v => v.lang === 'en-US') ||
+      voices[0]
+    voicesLoaded = true
+  }
+  loadVoices()
+  if (window.speechSynthesis.onvoiceschanged !== undefined) {
+    window.speechSynthesis.onvoiceschanged = loadVoices
+  }
+}
 
 export function initAudio() {
   if (audioCtx) return
   audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)()
+  // Also try loading voices on first user interaction
+  if (!voicesLoaded) {
+    const voices = window.speechSynthesis.getVoices()
+    if (voices.length > 0) {
+      bearVoice =
+        voices.find(v => v.name.includes('Daniel')) ||
+        voices.find(v => v.name.includes('Alex')) ||
+        voices.find(v => v.name.includes('Fred')) ||
+        voices.find(v => v.name.includes('David')) ||
+        voices.find(v => v.lang === 'en-US') ||
+        voices[0]
+      voicesLoaded = true
+    }
+  }
 }
 
 export function playChaChing() {
@@ -28,7 +65,7 @@ export function playChaChing() {
   osc2.stop(audioCtx.currentTime + 0.5)
 }
 
-// Queued speech — does NOT cancel previous lines, lets them play in sequence like the demo
+// Queued speech — does NOT cancel previous lines, lets them play in sequence
 export function speakQueued(text: string) {
   if (typeof window === 'undefined') return
   const synth = window.speechSynthesis
@@ -38,25 +75,14 @@ export function speakQueued(text: string) {
   utt.rate = 1.0
   utt.pitch = 0.8
   utt.volume = 1.0
+  if (bearVoice) utt.voice = bearVoice
 
-  const voices = synth.getVoices()
-  const voice =
-    voices.find(v => v.name.includes('Daniel')) ||
-    voices.find(v => v.name.includes('Alex')) ||
-    voices.find(v => v.name.includes('Fred')) ||
-    voices.find(v => v.name.includes('David')) ||
-    voices.find(v => v.name.includes('Mark')) ||
-    voices.find(v => v.lang === 'en-US') ||
-    voices[0]
-  if (voice) utt.voice = voice
-
-  synth.speak(utt) // queues automatically — no cancel = no cutoff
+  synth.speak(utt)
 }
 
-// Play the im-searching MP3 in the background (same as demo)
 export function playImSearchingMp3() {
   if (typeof window === 'undefined') return
   const audio = new Audio('/demo/audio/im-searching.mp3')
   audio.volume = 0.8
-  audio.play().catch(() => {}) // silently ignore autoplay blocks
+  audio.play().catch(() => {})
 }
