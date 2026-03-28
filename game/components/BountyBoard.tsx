@@ -115,6 +115,7 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
       addIntro('──────────────────────────────────────')
       await sleep(700)
       // Audio context has had ~1400ms to settle — safe to start speaking
+      playImSearchingMp3()
       addIntro("I'M THE BEAR. THE BOUNTY BEAR.")
       speakQueued("I'm the Bear. The Bounty Bear.")
       await sleep(1000)
