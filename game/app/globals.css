@@ -1,26 +1,99 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #0a0a0a;
+  --terminal-bg: #0d0d0d;
+  --green: #00ff41;
+  --green-dim: rgba(0, 255, 65, 0.4);
+  --green-dark: rgba(0, 255, 65, 0.08);
+  --amber: #ffb000;
+  --text: #c8ffc8;
+  --border: rgba(0, 255, 65, 0.3);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* { box-sizing: border-box; }
+
+html, body {
+  background: var(--bg);
+  color: var(--green);
+  font-family: 'VT323', monospace;
+  margin: 0;
+  min-height: 100%;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* CRT scanline overlay */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15) 0px,
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Animations */
+@keyframes pulse-ready {
+  0%, 100% {
+    box-shadow: 0 0 10px var(--green);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 35px 10px var(--green-dim);
+    transform: scale(1.03);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scanProgress {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+.animate-fade-in { animation: fadeIn 0.3s ease forwards; }
+.animate-slide-in { animation: slideIn 0.3s ease forwards; }
+.pulse-ready { animation: pulse-ready 1.5s infinite ease-in-out; }
+.blink { animation: blink 1s step-end infinite; }
+
+/* Progress bar */
+.progress-bar {
+  height: 8px;
+  background: var(--green-dark);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: var(--green);
+  transition: width 0.1s linear;
+}
+
+/* Terminal text */
+.terminal-line::before {
+  content: '► ';
+  color: var(--green-dim);
 }

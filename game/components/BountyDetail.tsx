@@ -28,6 +28,8 @@ export default function BountyDetail({
   const supabase = createClient()
   const [passcode, setPasscode] = useState('')
   const [loading, setLoading] = useState(false)
+  const [progress, setProgress] = useState(0)
+  const [statusMsg, setStatusMsg] = useState('')
   const [error, setError] = useState('')
   const [claimed, setClaimed] = useState(false)
   const isOwn = bounty.creator_id === userId
@@ -38,8 +40,24 @@ export default function BountyDetail({
     setLoading(true)
     setError('')
 
+    // Cinematic progress sequence
+    const steps = [
+      [10, "I'm the bear — the bounty bear!"],
+      [30, 'I can find them anywhere!'],
+      [55, "I'm searching..."],
+      [75, 'I am identifying...'],
+      [90, 'Verifying passcode...'],
+    ]
+    for (const [pct, msg] of steps) {
+      setProgress(pct as number)
+      setStatusMsg(msg as string)
+      await new Promise(r => setTimeout(r, 400))
+    }
+
     // Verify passcode (case-insensitive)
     if (passcode.trim().toUpperCase() !== bounty.verification_data.passcode_hash.toUpperCase()) {
+      setProgress(0)
+      setStatusMsg('')
       setError('Wrong passcode. Keep hunting.')
       setLoading(false)
       return
@@ -96,18 +114,24 @@ export default function BountyDetail({
 
   if (claimed) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50">
-        <div className="w-full max-w-md border border-green-500 bg-black p-8 font-mono text-center">
-          <div className="text-6xl mb-4">🐻</div>
-          <div className="text-green-300 text-xl font-bold mb-2">I GOT HIM!</div>
-          <div className="text-green-400 mb-1">THIS IS YOUR GUY!</div>
-          <div className="text-green-600 text-sm mb-4">{bounty.location_name}</div>
-          <div className="text-2xl text-green-300 font-bold mb-6">
+      <div className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center p-4 z-50">
+        <div className="w-full max-w-md border-2 border-green-500 bg-black p-8 text-center animate-fade-in"
+             style={{boxShadow: '0 0 40px rgba(0,255,65,0.3)'}}>
+          <div className="text-8xl mb-4 pulse-ready inline-block">🐻</div>
+          <div className="text-4xl text-green-300 font-bold mb-2" style={{fontFamily: "'Press Start 2P', cursive", fontSize: '1.2rem'}}>
+            I GOT HIM!
+          </div>
+          <div className="text-2xl text-green-400 mb-1">THIS IS YOUR GUY!</div>
+          <div className="text-green-600 mb-4">{bounty.location_name}</div>
+          <div className="progress-bar mb-4">
+            <div className="progress-bar-fill" style={{width: '100%'}} />
+          </div>
+          <div className="text-3xl text-green-300 font-bold mb-6">
             FINDERS FEE: +{bounty.reward_points.toLocaleString()} PTS
           </div>
           <button
             onClick={onClose}
-            className="border border-green-500 text-green-400 px-8 py-3 hover:bg-green-900 transition-colors uppercase tracking-widest"
+            className="border border-green-500 text-green-400 px-8 py-3 hover:bg-green-900 transition-colors uppercase tracking-widest text-xl"
           >
             ► COLLECT BOUNTY
           </button>
@@ -161,12 +185,20 @@ export default function BountyDetail({
               placeholder="PASSCODE"
               className="w-full bg-black border border-green-700 text-green-300 p-3 focus:outline-none focus:border-green-400 placeholder-green-900 uppercase tracking-widest"
             />
+            {loading && (
+              <div className="space-y-2">
+                <div className="progress-bar">
+                  <div className="progress-bar-fill" style={{width: `${progress}%`}} />
+                </div>
+                <div className="text-green-600 text-sm text-center blink">{statusMsg}</div>
+              </div>
+            )}
             <button
               type="submit"
               disabled={loading || !passcode.trim()}
-              className="w-full border border-green-500 text-green-400 py-3 hover:bg-green-900 transition-colors uppercase tracking-widest disabled:opacity-50"
+              className="w-full border border-green-500 text-green-400 py-3 hover:bg-green-900 transition-colors uppercase tracking-widest disabled:opacity-50 text-xl"
             >
-              {loading ? 'VERIFYING...' : '► CLAIM BOUNTY'}
+              {loading ? '...' : '► CLAIM BOUNTY'}
             </button>
           </form>
         )}
