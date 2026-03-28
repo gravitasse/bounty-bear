@@ -104,14 +104,33 @@
       overflow: hidden;
     }
 
+    /* Mobile-only INFO toggle button — hidden on desktop */
+    .mobile-info-btn {
+      display: none;
+    }
+
     @media (max-width: 1024px) {
       main {
         grid-template-columns: 1fr;
         grid-template-rows: auto 1fr;
         overflow: hidden;
+        position: relative;
       }
       .info-panel {
-        display: none !important;
+        display: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 100;
+        border-left: none;
+        border-bottom: 2px solid var(--green);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .info-panel.mobile-open {
+        display: block;
       }
       .sidebar {
         flex-direction: row;
@@ -144,6 +163,25 @@
       }
       .stat-row {
         padding: 2px 0;
+      }
+      .mobile-info-btn {
+        display: block;
+        background: none;
+        border: 1px solid var(--amber);
+        color: var(--amber);
+        font-family: 'VT323', monospace;
+        font-size: 0.9rem;
+        padding: 4px 10px;
+        cursor: pointer;
+        border-radius: 4px;
+        flex-shrink: 0;
+        transition: all 0.2s;
+      }
+      .mobile-info-btn:hover { background: rgba(255, 176, 0, 0.15); }
+      .mobile-info-btn.active {
+        background: rgba(255, 176, 0, 0.2);
+        border-color: var(--green);
+        color: var(--green);
       }
       .terminal {
         height: 100%;
@@ -663,6 +701,7 @@
           <span class="stat-value" id="bountyTotal">$0</span>
         </div>
       </div>
+      <button class="mobile-info-btn" id="mobileInfoBtn" title="Toggle info panel">📋 INFO</button>
     </aside>
 
     <section class="terminal">
@@ -689,7 +728,7 @@
       </div>
     </section>
 
-    <aside class="info-panel">
+    <aside class="info-panel" id="infoPanel">
       <div class="info-section">
         <div class="info-title">THE PROPHECY</div>
         <div class="film-quote">
@@ -978,6 +1017,15 @@
     }
 
     document.getElementById('clearLogBtn').addEventListener('click', clearBountyLog);
+
+    // Mobile INFO panel toggle
+    const mobileInfoBtn = document.getElementById('mobileInfoBtn');
+    const infoPanel = document.getElementById('infoPanel');
+    mobileInfoBtn.addEventListener('click', () => {
+      const isOpen = infoPanel.classList.toggle('mobile-open');
+      mobileInfoBtn.classList.toggle('active', isOpen);
+      mobileInfoBtn.textContent = isOpen ? '✕ CLOSE' : '📋 INFO';
+    });
 
     loadSession();
 
