@@ -218,6 +218,7 @@
         transition: all 0.3s;
       }
       .stat-row {
+        flex: 1 !important; /* Force equal 1/3 width distribution */
         padding: 0;
         border-bottom: none;
         display: flex;
@@ -290,7 +291,10 @@
       }
 
       .target-found .target-card {
-        display: block !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
         background: rgba(0, 255, 65, 0.15) !important;
         border: 2px solid var(--green) !important;
         padding: 16px !important; /* Restored padding */
@@ -300,9 +304,9 @@
         animation: slideIn 0.3s forwards;
         width: 100% !important;
       }
-      .target-found .target-label { text-align: center !important; width: 100%; display: block; margin-bottom: 4px; }
-      .target-card .target-name { font-size: 1.8rem !important; font-weight: bold; color: var(--green); text-align: center !important; width: 100%; display: block; }
-      .target-card .target-location { font-size: 1.2rem !important; color: var(--text); text-align: center !important; width: 100%; display: block; }
+      .target-found .target-label { text-align: center !important; width: 100%; display: block; margin-bottom: 4px; font-weight: bold; opacity: 0.8; }
+      .target-card .target-name { font-size: 1.8rem !important; font-weight: bold; color: var(--green); text-align: center !important; width: 100%; display: block; margin: 0 !important; }
+      .target-card .target-location { font-size: 1.2rem !important; color: var(--text); text-align: center !important; width: 100%; display: block; margin: 0 !important; }
 
       .stats-box {
         display: none !important; /* Hide stats on initial load/searching */
