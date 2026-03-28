@@ -1,5 +1,12 @@
 import type { Metadata } from "next";
+import { VT323 } from "next/font/google";
 import "./globals.css";
+
+const vt323 = VT323({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-vt323",
+});
 
 export const metadata: Metadata = {
   title: "Bounty Bear",
@@ -12,13 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
-      <head>
-        <link
-          href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="en" className={`${vt323.variable} h-full`}>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
