@@ -7,6 +7,7 @@ import CreateBountyModal from './CreateBountyModal'
 import BountyDetail from './BountyDetail'
 import LeaderboardModal from './LeaderboardModal'
 import dynamic from 'next/dynamic'
+import Link from 'next/link'
 
 const MapModal = dynamic(() => import('./MapModal'), { ssr: false })
 
@@ -62,7 +63,7 @@ const diffStars = (d: number) => '★'.repeat(d) + '☆'.repeat(Math.max(0, 5 - 
 export default function BountyBoard({ user, bounties: initialBounties }: { user: User; bounties: Bounty[] }) {
   const supabase = createClient()
   const [showCreate, setShowCreate] = useState(false)
-  const [showLeaderboard, setShowLeaderboard] = useState(false)
+
   const [showMap, setShowMap] = useState(false)
   const [selectedBounty, setSelectedBounty] = useState<Bounty | null>(null)
   const [bounties, setBounties] = useState(initialBounties)
@@ -298,7 +299,7 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
       await supabase.from('claims').insert({
         bounty_id: target.id,
         hunter_id: user.id,
-        hunt_id: target.id,
+        hunt_id: null,
         verification_method: 'passcode',
         verification_location: `POINT(${coords.lng} ${coords.lat})`,
         verification_proof: { passcode_entered: passcode },
@@ -358,8 +359,13 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
           <span className="logo-bear">🐻</span>
           <span>BOUNTY BEAR v1.991</span>
         </div>
-        <div className="system-status">
-          {user.username.toUpperCase()} | {points.toLocaleString()} PTS
+        <div className="system-status" style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
+          <Link href="/profile" style={{ color: 'var(--amber)', textDecoration: 'none' }}>
+            {user.username.toUpperCase()} | {points.toLocaleString()} PTS
+          </Link>
+          <Link href="/leaderboard" style={{ color: 'var(--green)', textDecoration: 'none', fontSize: '1rem' }}>
+            🏆
+          </Link>
         </div>
       </header>
 
@@ -512,9 +518,9 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
               <button className="action-btn primary" onClick={() => setShowCreate(true)}>
                 ► POST BOUNTY
               </button>
-              <button className="action-btn" onClick={() => setShowLeaderboard(true)}>
+              <Link href="/leaderboard" className="action-btn" style={{ textDecoration: 'none', textAlign: 'center' }}>
                 🏆 LEADERBOARD
-              </button>
+              </Link>
               <button className="action-btn" onClick={() => setShowMap(true)}>
                 🗺️ MAP
               </button>
@@ -620,8 +626,6 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
           onClose={() => { setShowCreate(false); window.location.reload() }}
         />
       )}
-
-      {showLeaderboard && <LeaderboardModal onClose={() => setShowLeaderboard(false)} />}
 
       {showMap && (
         <MapModal
