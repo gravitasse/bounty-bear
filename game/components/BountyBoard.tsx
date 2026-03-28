@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { initAudio, playChaChing, speakQueued, playImSearchingMp3, playBlip, setVoiceMuted, getVoiceMuted, stopAllAudio } from '@/lib/audio'
+import { initAudio, playChaChing, speakQueued, speakSequence, playImSearchingMp3, playBlip, setVoiceMuted, getVoiceMuted, stopAllAudio } from '@/lib/audio'
 import CreateBountyModal from './CreateBountyModal'
 import BountyDetail from './BountyDetail'
 import LeaderboardModal from './LeaderboardModal'
@@ -117,17 +117,20 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
       await sleep(700)
       // Audio context has had ~1400ms to settle — safe to start speaking
       playImSearchingMp3()
+      // Fire speech sequence independently with explicit pauses between lines
+      speakSequence([
+        { text: "I'm the Bear. The Bounty Bear." },
+        { text: "I find them here. I find them there." },
+        { text: "I can find them anywhere.", pauseAfter: 1800 },
+        { text: "The Bear. Advanced Bounty Bear programming." },
+      ])
       addIntro("I'M THE BEAR. THE BOUNTY BEAR.")
-      speakQueued("I'm the Bear. The Bounty Bear.")
       await sleep(1000)
       addIntro("I FIND THEM HERE. I FIND THEM THERE.")
-      speakQueued("I find them here. I find them there.")
       await sleep(900)
       addIntro("I CAN FIND THEM ANYWHERE.")
-      speakQueued("I can find them anywhere.")
       await sleep(2200)
       addIntro("THE BEAR — ADVANCED BOUNTY BEAR PROGRAMMING.")
-      speakQueued("The Bear. Advanced Bounty Bear programming.")
       await sleep(600)
       addIntro('──────────────────────────────────────')
       await sleep(500)

@@ -77,9 +77,7 @@ export function playChaChing() {
 export function speakQueued(text: string) {
   if (typeof window === 'undefined') return
   const synth = window.speechSynthesis
-  if (!synth) return
-
-  if (voiceMuted) return
+  if (!synth || voiceMuted) return
 
   const utt = new SpeechSynthesisUtterance(text)
   utt.rate = 1.0
@@ -88,6 +86,32 @@ export function speakQueued(text: string) {
   if (bearVoice) utt.voice = bearVoice
 
   synth.speak(utt)
+}
+
+// Speak a sequence with controlled pauses BETWEEN lines (pauseAfter in ms)
+export function speakSequence(items: { text: string; pauseAfter?: number }[]) {
+  if (typeof window === 'undefined') return
+  const synth = window.speechSynthesis
+  if (!synth) return
+
+  let index = 0
+
+  function next() {
+    if (index >= items.length || voiceMuted) return
+    const item = items[index++]
+    const utt = new SpeechSynthesisUtterance(item.text)
+    utt.rate = 1.0
+    utt.pitch = 0.8
+    utt.volume = 1.0
+    if (bearVoice) utt.voice = bearVoice
+    utt.onend = () => {
+      if (item.pauseAfter) setTimeout(next, item.pauseAfter)
+      else next()
+    }
+    synth.speak(utt)
+  }
+
+  next()
 }
 
 export function playBlip() {
