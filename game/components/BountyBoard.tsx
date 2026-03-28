@@ -125,7 +125,7 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
       await sleep(900)
       addIntro("I CAN FIND THEM ANYWHERE.")
       speakQueued("I can find them anywhere.")
-      await sleep(800)
+      await sleep(2200)
       addIntro("THE BEAR — ADVANCED BOUNTY BEAR PROGRAMMING.")
       speakQueued("The Bear. Advanced Bounty Bear programming.")
       await sleep(600)
