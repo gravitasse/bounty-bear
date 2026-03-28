@@ -626,10 +626,45 @@
       transition: width 0.3s;
     }
 
+    /* Submit button */
+    .submit-btn {
+      background: var(--green);
+      border: 2px solid var(--green);
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-family: 'VT323', monospace;
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: var(--bg);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .submit-btn:hover {
+      background: transparent;
+      color: var(--green);
+      transform: scale(1.05);
+    }
+
+    .submit-btn:active {
+      transform: scale(0.98);
+    }
+
+    .submit-btn:disabled {
+      background: var(--border);
+      border-color: var(--border);
+      color: var(--text);
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
     /* Voice button */
     .voice-btn {
-      background: var(--green);
-      border: none;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--green);
       border-radius: 8px;
       padding: 10px 16px;
       font-size: 1.2rem;
@@ -638,6 +673,7 @@
     }
 
     .voice-btn:hover {
+      background: rgba(0, 255, 65, 0.1);
       transform: scale(1.1);
     }
 
@@ -807,6 +843,7 @@
         <div class="click-hint" id="clickHint">👆 CLICK HERE TO START</div>
         <span class="prompt">SEARCH></span>
         <input type="text" class="terminal-input waiting" id="searchInput" placeholder="Enter target name..." autocomplete="off">
+        <button id="submitBtn" class="submit-btn" title="Start search">SEARCH</button>
         <button id="voiceBtn" class="voice-btn" title="Click to enable voice">🔊</button>
       </div>
     </section>
@@ -849,6 +886,7 @@
   <script>
     const output = document.getElementById('output');
     const searchInput = document.getElementById('searchInput');
+    const submitBtn = document.getElementById('submitBtn');
     const bearContainer = document.getElementById('bearContainer');
     const bearStatus = document.getElementById('bearStatus');
     const systemStatus = document.getElementById('systemStatus');
@@ -1102,6 +1140,7 @@
       }
 
       searchInput.disabled = true;
+      submitBtn.disabled = true;
       searchCount++;
       searchCountEl.textContent = searchCount;
 
@@ -1199,6 +1238,7 @@
               addLine(`THE BEAR ALWAYS GETS HIS MAN. 🐻`, 'system');
               setBearState('ready');
               searchInput.disabled = false;
+              submitBtn.disabled = false;
               searchInput.value = '';
               searchInput.focus();
             }, 14000);
@@ -1212,6 +1252,7 @@
             speak("I lost the trail.");
             setBearState('ready');
             searchInput.disabled = false;
+            submitBtn.disabled = false;
             stream.close();
           }
 
@@ -1227,6 +1268,7 @@
         speak("Connection lost. Check your settings.");
         setBearState('ready');
         searchInput.disabled = false;
+        submitBtn.disabled = false;
         stream.close();
       };
     }
@@ -1237,6 +1279,7 @@
 
       searchInput.value = '';
       searchInput.disabled = false;
+      submitBtn.disabled = false;
 
       if (isMobile()) {
         mainArea.classList.remove('mobile-compact', 'searching-active', 'target-found');
@@ -1252,6 +1295,13 @@
 
     searchInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter' && searchInput.value.trim()) {
+        performSearch(searchInput.value.trim());
+      }
+    });
+
+    // Submit button click handler
+    submitBtn.addEventListener('click', () => {
+      if (searchInput.value.trim()) {
         performSearch(searchInput.value.trim());
       }
     });
