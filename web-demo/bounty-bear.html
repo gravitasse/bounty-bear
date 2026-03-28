@@ -127,7 +127,7 @@
       main {
         display: flex;
         flex-direction: column;
-        overflow: hidden;
+        overflow: visible; /* CRITICAL: prevent pulse glow clipping */
         position: relative;
         max-height: calc(100vh - 20px);
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -155,7 +155,7 @@
         align-items: center;
         border-right: none;
         border-bottom: 1px solid var(--green);
-        padding: 10px 20px;
+        padding: 10px 24px;
         gap: 12px;
         min-height: auto;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -248,7 +248,7 @@
         width: 100px;
         height: 100px;
         font-size: 60px;
-        border-width: 3px;
+        outline-width: 3px;
       }
       .searching-active .bear-status {
         font-size: 1.4rem;
@@ -296,7 +296,7 @@
 
       /* Found / Compact State (Bear SMALL) */
       .mobile-compact .sidebar {
-        padding: 10px 20px;
+        padding: 12px 24px;
         gap: 12px;
         overflow: visible;
       }
@@ -304,7 +304,7 @@
         width: 44px;
         height: 44px;
         font-size: 24px;
-        border-width: 2px;
+        outline-width: 2px;
       }
       .mobile-compact .bear-status {
         font-size: 0.95rem;
@@ -350,8 +350,8 @@
     }
     
     @keyframes pulse-ready {
-      0%, 100% { box-shadow: 0 0 8px var(--green-dim); border-color: var(--green); }
-      50% { box-shadow: 0 0 20px 5px var(--green-dim); border-color: var(--amber); }
+      0%, 100% { box-shadow: 0 0 8px var(--green-dim); outline-color: var(--green); }
+      50% { box-shadow: 0 0 20px 5px var(--green-dim); outline-color: var(--amber); }
     }
     
     .bear-container.ready {
@@ -376,7 +376,8 @@
     .bear-container {
       width: 180px;
       height: 180px;
-      border: 3px solid var(--green);
+      outline: 2px solid var(--green);
+      outline-offset: -2px;
       border-radius: 12px;
       display: flex;
       align-items: center;
@@ -385,11 +386,12 @@
       background: rgba(0, 255, 65, 0.05);
       position: relative;
       transition: all 0.3s;
+      transform: translateZ(0);
     }
 
     .bear-container.searching {
       animation: pulse 0.8s ease-in-out infinite;
-      border-color: var(--amber);
+      outline-color: var(--amber);
       box-shadow: 0 0 30px rgba(255, 176, 0, 0.3);
     }
 
