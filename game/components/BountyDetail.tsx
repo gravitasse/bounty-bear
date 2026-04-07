@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 
 type Clue = { text: string; unlock_distance: number | null }
 type Bounty = {
@@ -51,9 +51,9 @@ export default function BountyDetail({
   const [passcode, setPasscode] = useState('')
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null)
   const isOwn = bounty.creator_id === userId
-  const bountyCoords = bounty.verification_data?.lat != null
+  const bountyCoords = useMemo(() => bounty.verification_data?.lat != null
     ? { lat: bounty.verification_data.lat!, lng: bounty.verification_data.lng! }
-    : null
+    : null, [bounty.verification_data])
 
   // GPS polling for proximity unlocking
   useEffect(() => {
@@ -64,7 +64,7 @@ export default function BountyDetail({
       { enableHighAccuracy: true, maximumAge: 5000 }
     )
     return () => navigator.geolocation.clearWatch(watchId)
-  }, [bounty.id])
+  }, [bounty.id, bountyCoords])
 
   const distanceToTarget = userCoords && bountyCoords
     ? haversineMeters(userCoords.lat, userCoords.lng, bountyCoords.lat, bountyCoords.lng)

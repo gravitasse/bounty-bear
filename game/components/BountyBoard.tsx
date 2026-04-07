@@ -2,10 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { initAudio, playChaChing, speakQueued, speakSequence, playImSearchingMp3, playBlip, setVoiceMuted, getVoiceMuted, stopAllAudio } from '@/lib/audio'
+import { initAudio, playChaChing, speakQueued, speakSequence, playImSearchingMp3, playBlip, setVoiceMuted, stopAllAudio } from '@/lib/audio'
 import CreateBountyModal from './CreateBountyModal'
 import BountyDetail from './BountyDetail'
-import LeaderboardModal from './LeaderboardModal'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 
@@ -151,11 +150,6 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
     initAudio()
   }
 
-  // Open info panel when bounty selected
-  useEffect(() => {
-    if (selectedBounty) setInfoOpen(true)
-    else if (claimState === 'idle') setInfoOpen(false)
-  }, [selectedBounty])
 
   // Supabase Realtime — live bounty updates
   useEffect(() => {
@@ -182,14 +176,17 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
           const b = payload.new as Bounty
           if (b.status !== 'active') {
             setBounties(prev => prev.filter(x => x.id !== b.id))
-            if (selectedBounty?.id === b.id) setSelectedBounty(null)
+            if (selectedBounty?.id === b.id) {
+              setSelectedBounty(null)
+              setInfoOpen(false)
+            }
           }
         }
       )
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
-  }, [user.id])
+  }, [user.id, supabase, selectedBounty?.id])
 
   function addLine(text: string, type: TerminalLine['type'] = 'normal') {
     setTerminalLines(prev => [...prev, { text, type }])
@@ -199,6 +196,7 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
     activateAudio()
     playBlip()
     setSelectedBounty(b)
+    setInfoOpen(true)
   }
 
   async function handleClaim(passcode: string) {
@@ -345,6 +343,7 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
   function handleCollect() {
     setClaimState('idle')
     setSelectedBounty(null)
+    setInfoOpen(false)
     setTerminalLines([])
     setProgress(0)
     setBearState('ready')
@@ -574,10 +573,10 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
               <div className="info-section">
                 <div className="info-title">THE PROPHECY</div>
                 <div className="film-quote">
-                  "I'm the Bear. The Bounty Bear. I find them here. I find them there.
-                  I can find them anywhere."
+                  &quot;I&apos;m the Bear. The Bounty Bear. I find them here. I find them there.
+                  I can find them anywhere.&quot;
                 </div>
-                <div className="film-credit">— Until the End of the World, 1991</div>
+                <div className="film-credit">&mdash; Until the End of the World, 1991</div>
               </div>
 
               <div className="info-section">
@@ -634,7 +633,10 @@ export default function BountyBoard({ user, bounties: initialBounties }: { user:
         <MapModal
           bounties={bounties}
           onClose={() => setShowMap(false)}
-          onSelect={(b) => { setShowMap(false); selectBounty(b) }}
+          onSelect={(b) => {
+            setShowMap(false)
+            selectBounty(b)
+          }}
         />
       )}
     </>

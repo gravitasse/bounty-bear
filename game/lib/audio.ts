@@ -33,7 +33,7 @@ if (typeof window !== 'undefined') {
 
 export function initAudio() {
   if (audioCtx) return
-  audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)()
+  audioCtx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
   // Also try loading voices on first user interaction
   if (!voicesLoaded) {
     const voices = window.speechSynthesis.getVoices()

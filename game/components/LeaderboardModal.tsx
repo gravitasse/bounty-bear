@@ -20,7 +20,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
         setRows(data ?? [])
         setLoading(false)
       })
-  }, [])
+  }, [supabase])
 
   return (
     <div

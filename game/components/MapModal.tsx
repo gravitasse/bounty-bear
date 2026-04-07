@@ -1,6 +1,13 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import type { Map } from 'leaflet'
+
+declare global {
+  interface Window {
+    __selectBounty?: (id: string) => void
+  }
+}
 
 type Bounty = {
   id: string
@@ -25,7 +32,7 @@ export default function MapModal({
   onSelect: (b: Bounty) => void
 }) {
   const mapRef = useRef<HTMLDivElement>(null)
-  const leafletRef = useRef<any>(null)
+  const leafletRef = useRef<Map | null>(null)
 
   useEffect(() => {
     if (!mapRef.current || leafletRef.current) return
@@ -33,7 +40,8 @@ export default function MapModal({
     // Dynamic import to avoid SSR issues
     import('leaflet').then(L => {
       // Fix default marker icon paths for Next.js
-      delete (L.Icon.Default.prototype as any)._getIconUrl
+      type IconPrototype = { _getIconUrl?: unknown }
+      delete (L.Icon.Default.prototype as IconPrototype)._getIconUrl
       L.Icon.Default.mergeOptions({
         iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
         iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -97,7 +105,7 @@ export default function MapModal({
       })
 
       // Global callback for popup buttons
-      ;(window as any).__selectBounty = (id: string) => {
+      window.__selectBounty = (id: string) => {
         const b = bounties.find(x => x.id === id)
         if (b) { onSelect(b); onClose() }
       }
@@ -130,9 +138,9 @@ export default function MapModal({
     return () => {
       leafletRef.current?.remove()
       leafletRef.current = null
-      delete (window as any).__selectBounty
+      delete window.__selectBounty
     }
-  }, [])
+  }, [bounties, onClose, onSelect])
 
   const mappable = bounties.filter(b => b.verification_data?.lat != null)
 
